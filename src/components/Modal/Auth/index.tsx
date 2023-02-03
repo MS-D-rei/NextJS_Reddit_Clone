@@ -1,3 +1,5 @@
+import { closeModal } from '@/store/authModalSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   Button,
   Modal,
@@ -7,13 +9,17 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useDisclosure,
 } from '@chakra-ui/react';
 
 export default function AuthModal() {
-  const { isOpen, onClose } = useDisclosure();
+  const dispatch = useAppDispatch();
+  const state = useAppSelector((state) => state.authModal);
+  const modalCloseHandler = () => {
+    dispatch(closeModal());
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={state.isOpen} onClose={modalCloseHandler}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Modal Title</ModalHeader>
@@ -21,7 +27,7 @@ export default function AuthModal() {
         <ModalBody>Lorem Ipsum</ModalBody>
 
         <ModalFooter>
-          <Button colorScheme="teal" onClick={onClose}>
+          <Button colorScheme="teal" onClick={modalCloseHandler}>
             Close
           </Button>
         </ModalFooter>

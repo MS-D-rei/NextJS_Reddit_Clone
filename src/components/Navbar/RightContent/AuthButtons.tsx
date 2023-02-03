@@ -1,6 +1,18 @@
+import { openModal } from '@/store/authModalSlice';
+import { useAppDispatch } from '@/store/hooks';
 import { Button } from '@chakra-ui/react';
 
 export default function AuthButtons() {
+  const dispatch = useAppDispatch();
+
+  const openLoginModalHandler = () => {
+    dispatch(openModal('login'));
+  };
+
+  const openSignupModalHandler = () => {
+    dispatch(openModal('signup'));
+  };
+
   return (
     <>
       <Button
@@ -10,6 +22,7 @@ export default function AuthButtons() {
         display={{ base: 'none', sm: 'flex' }}
         width={{ base: '4rem', md: '7rem' }}
         mr={2}
+        onClick={openLoginModalHandler}
       >
         Login
       </Button>
@@ -20,6 +33,7 @@ export default function AuthButtons() {
         display={{ base: 'none', sm: 'flex' }}
         width={{ base: '4rem', md: '7rem' }}
         mr={2}
+        onClick={openSignupModalHandler}
       >
         Signup
       </Button>
