@@ -23,10 +23,13 @@ export const authModalSlice = createSlice({
     closeModal: (state) => {
       state.isOpen = false;
     },
+    changeView: (state, { payload }: PayloadAction<AuthModalViewType>) => {
+      state.view = payload;
+    }
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { openModal, closeModal } = authModalSlice.actions;
+export const { openModal, closeModal, changeView } = authModalSlice.actions;
 
 export default authModalSlice.reducer;
