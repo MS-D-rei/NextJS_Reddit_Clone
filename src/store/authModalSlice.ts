@@ -22,7 +22,7 @@ export const authModalSlice = createSlice({
     },
     closeModal: (state) => {
       state.isOpen = false;
-    }
+    },
   },
 });
 
