@@ -25,7 +25,7 @@ export const authModalSlice = createSlice({
     },
     changeView: (state, { payload }: PayloadAction<AuthModalViewType>) => {
       state.view = payload;
-    }
+    },
   },
 });
 
