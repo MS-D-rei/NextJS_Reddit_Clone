@@ -10,8 +10,10 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Text,
 } from '@chakra-ui/react';
 import AuthInputs from '@/components/Modal/Auth/AuthInputs';
+import OAuthButtons from '@/components/Modal/Auth/OAuthButtons';
 
 export default function AuthModal() {
   const dispatch = useAppDispatch();
@@ -38,13 +40,14 @@ export default function AuthModal() {
           pb={6}
         >
           <Flex
-            // direction="column"
-            // align="center"
+            direction="column"
+            align="center"
             // justify='center'
             width="100%"
             // border="1px solid red"
           >
-            {/* <OAuthButtons /> */}
+            <OAuthButtons />
+            <Text color='gray.500' fontWeight={700}>OR</Text>
             <AuthInputs />
             {/* <ResetPassword /> */}
           </Flex>
