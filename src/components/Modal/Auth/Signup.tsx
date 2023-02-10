@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
 import {
   Button,
   Flex,
@@ -11,6 +11,7 @@ import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { changeView } from '@/store/authModalSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { auth } from '@/firebase/clientApp';
+import { z, ZodFormattedError } from 'zod';
 
 export default function Signup() {
   const [formState, setFormState] = useState({
@@ -19,10 +20,17 @@ export default function Signup() {
     confirmPassword: '',
   });
 
+  const [errors, setErrors] = useState<ZodFormattedError<{email: string, password: string}, string>>();
+
   const [createUserWithEmailAndPassword, user, loading, userError] =
     useCreateUserWithEmailAndPassword(auth);
 
   const dispatch = useAppDispatch();
+
+  const signupInputSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+  });
 
   const formStateChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     setFormState((prev) => ({
@@ -31,10 +39,29 @@ export default function Signup() {
     }));
   };
 
-  const submitHandler = () => {
-    // email validation
+  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    // password validation
+    // clear error
+    if (errors) setErrors(undefined);
+
+    // password matching
+    if (formState.password !== formState.confirmPassword) {
+      setErrors({ password: { _errors: ['Passwords do not matches'] }, _errors: [] });
+      return;
+    }
+
+    // email and password validation
+    const validationResult = signupInputSchema.safeParse({
+      email: formState.email,
+      password: formState.password,
+    });
+    if (!validationResult.success) {
+      // console.log(validationResult.error.format());
+      // console.log(validationResult.error.flatten());
+      setErrors(validationResult.error.format());
+      return;
+    }
 
     createUserWithEmailAndPassword(formState.email, formState.password);
   };
@@ -87,9 +114,9 @@ export default function Signup() {
         <FormLabel>Password</FormLabel>
         <Input
           id="confirmPassword"
-          type="confirmPassword"
+          type="password"
           name="confirmPassword"
-          placeholder="confirmPassword"
+          placeholder="Password"
           bg="gray.50"
           _placeholder={{ color: 'gray.500' }}
           _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
@@ -102,6 +129,16 @@ export default function Signup() {
           onChange={formStateChangeHandler}
         />
       </FormControl>
+      {errors?.email && (
+        <Text textAlign="center" color="red.500" fontSize="xl">
+          {errors.email._errors}
+        </Text>
+      )}
+      {errors?.password && (
+        <Text textAlign="center" color="red.500" fontSize="xl">
+          {errors.password._errors}
+        </Text>
+      )}
       <Button type="submit" width="100%" height="2rem" mt={2} mb={4}>
         Sign up
       </Button>
