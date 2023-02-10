@@ -1,5 +1,4 @@
-import { changeView } from '@/store/authModalSlice';
-import { useAppDispatch } from '@/store/hooks';
+import { ChangeEvent, useState } from 'react';
 import {
   Button,
   Flex,
@@ -8,14 +7,19 @@ import {
   Input,
   Text,
 } from '@chakra-ui/react';
-import { ChangeEvent, useState } from 'react';
+import { useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { changeView } from '@/store/authModalSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { auth } from '@/firebase/clientApp';
 
 export default function Signup() {
   const [formState, setFormState] = useState({
-    username: '',
     email: '',
     password: '',
   });
+
+  const [createUserWithEmailAndPassword, user, loading, error] =
+    useCreateUserWithEmailAndPassword(auth);
 
   const dispatch = useAppDispatch();
 
@@ -26,7 +30,13 @@ export default function Signup() {
     }));
   };
 
-  const submitHandler = () => {};
+  const submitHandler = () => {
+    // email validation
+
+    // password validation
+
+    createUserWithEmailAndPassword(formState.email, formState.password);
+  };
 
   const viewChangeHandler = () => {
     dispatch(changeView('login'));
@@ -34,25 +44,6 @@ export default function Signup() {
 
   return (
     <form onSubmit={submitHandler}>
-      <FormControl mb={4}>
-        <FormLabel htmlFor="username">User Name</FormLabel>
-        <Input
-          id="username"
-          type="text"
-          name="username"
-          placeholder="username"
-          bg="gray.50"
-          _placeholder={{ color: 'gray.500' }}
-          _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
-          _focus={{
-            outline: 'none',
-            bg: 'white',
-            border: '1px solid',
-            borderColor: 'blue.500',
-          }}
-          onChange={formStateChangeHandler}
-        />
-      </FormControl>
       <FormControl mb={4}>
         <FormLabel>Email</FormLabel>
         <Input
