@@ -16,9 +16,10 @@ export default function Signup() {
   const [formState, setFormState] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
 
-  const [createUserWithEmailAndPassword, user, loading, error] =
+  const [createUserWithEmailAndPassword, user, loading, userError] =
     useCreateUserWithEmailAndPassword(auth);
 
   const dispatch = useAppDispatch();
@@ -70,6 +71,25 @@ export default function Signup() {
           type="password"
           name="password"
           placeholder="password"
+          bg="gray.50"
+          _placeholder={{ color: 'gray.500' }}
+          _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
+          _focus={{
+            outline: 'none',
+            bg: 'white',
+            border: '1px solid',
+            borderColor: 'blue.500',
+          }}
+          onChange={formStateChangeHandler}
+        />
+      </FormControl>
+      <FormControl mb={4}>
+        <FormLabel>Password</FormLabel>
+        <Input
+          id="confirmPassword"
+          type="confirmPassword"
+          name="confirmPassword"
+          placeholder="confirmPassword"
           bg="gray.50"
           _placeholder={{ color: 'gray.500' }}
           _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
