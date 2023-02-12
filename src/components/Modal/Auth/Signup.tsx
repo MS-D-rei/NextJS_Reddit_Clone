@@ -12,6 +12,7 @@ import { changeView } from '@/store/authModalSlice';
 import { useAppDispatch } from '@/store/hooks';
 import { auth } from '@/firebase/clientApp';
 import { z, ZodFormattedError } from 'zod';
+import { FIREBASE_ERRORS } from '@/firebase/errors';
 
 export default function Signup() {
   const [formState, setFormState] = useState({
@@ -20,7 +21,8 @@ export default function Signup() {
     confirmPassword: '',
   });
 
-  const [errors, setErrors] = useState<ZodFormattedError<{email: string, password: string}, string>>();
+  const [errors, setErrors] =
+    useState<ZodFormattedError<{ email: string; password: string }, string>>();
 
   const [createUserWithEmailAndPassword, user, loading, userError] =
     useCreateUserWithEmailAndPassword(auth);
@@ -47,7 +49,10 @@ export default function Signup() {
 
     // password matching
     if (formState.password !== formState.confirmPassword) {
-      setErrors({ password: { _errors: ['Passwords do not matches'] }, _errors: [] });
+      setErrors({
+        password: { _errors: ['Passwords do not matches'] },
+        _errors: [],
+      });
       return;
     }
 
@@ -97,7 +102,7 @@ export default function Signup() {
           id="password"
           type="password"
           name="password"
-          placeholder="password"
+          placeholder="min 8 characters required"
           bg="gray.50"
           _placeholder={{ color: 'gray.500' }}
           _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
@@ -116,7 +121,7 @@ export default function Signup() {
           id="confirmPassword"
           type="password"
           name="confirmPassword"
-          placeholder="Password"
+          placeholder="confirm password"
           bg="gray.50"
           _placeholder={{ color: 'gray.500' }}
           _hover={{ bg: 'white', border: '1px solid', borderColor: 'blue.500' }}
@@ -129,17 +134,29 @@ export default function Signup() {
           onChange={formStateChangeHandler}
         />
       </FormControl>
-      {errors?.email && (
+      {errors && (
+        <>
+          <Text textAlign="center" color="red.500" fontSize="xl">
+            {errors.email?._errors}
+          </Text>
+          <Text textAlign="center" color="red.500" fontSize="xl">
+            {errors.password?._errors}
+          </Text>
+        </>
+      )}
+      {userError && (
         <Text textAlign="center" color="red.500" fontSize="xl">
-          {errors.email._errors}
+          {FIREBASE_ERRORS[userError.message]}
         </Text>
       )}
-      {errors?.password && (
-        <Text textAlign="center" color="red.500" fontSize="xl">
-          {errors.password._errors}
-        </Text>
-      )}
-      <Button type="submit" width="100%" height="2rem" mt={2} mb={4}>
+      <Button
+        type="submit"
+        width="100%"
+        height="2rem"
+        mt={2}
+        mb={4}
+        isLoading={loading}
+      >
         Sign up
       </Button>
       <Flex justifyContent="center">
