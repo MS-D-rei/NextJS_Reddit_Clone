@@ -1,3 +1,4 @@
+import { ChangeEvent, FormEvent, useState } from 'react';
 import { changeView } from '@/store/authModalSlice';
 import { useAppDispatch } from '@/store/hooks';
 import {
@@ -9,13 +10,17 @@ import {
   Input,
   Text,
 } from '@chakra-ui/react';
-import { ChangeEvent, useState } from 'react';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase/clientApp';
 
 export default function Login() {
   const [formState, setFormState] = useState({
     email: '',
     password: '',
   });
+
+  const [signinWithEmailAndPassword, user, loading, googleOAuthError] =
+    useSignInWithEmailAndPassword(auth);
 
   const dispatch = useAppDispatch();
 
@@ -27,11 +32,15 @@ export default function Login() {
   };
 
   // Firebase logic
-  const submitHandler = () => {};
+  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    signinWithEmailAndPassword(formState.email, formState.password);
+  };
 
   const viewChangeHandler = () => {
-    dispatch(changeView('signup'))
-  }
+    dispatch(changeView('signup'));
+  };
 
   return (
     <form onSubmit={submitHandler}>
@@ -80,7 +89,12 @@ export default function Login() {
       </Button>
       <Flex justifyContent="center">
         <Text mr={2}>New here?</Text>
-        <Text color="blue.500" fontWeight={800} cursor="pointer" onClick={viewChangeHandler}>
+        <Text
+          color="blue.500"
+          fontWeight={800}
+          cursor="pointer"
+          onClick={viewChangeHandler}
+        >
           SIGN UP
         </Text>
       </Flex>
