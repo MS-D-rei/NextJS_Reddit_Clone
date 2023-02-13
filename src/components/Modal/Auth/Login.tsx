@@ -12,6 +12,8 @@ import {
 } from '@chakra-ui/react';
 import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/clientApp';
+import { z, ZodFormattedError } from 'zod';
+import { FIREBASE_ERRORS } from '@/firebase/errors';
 
 export default function Login() {
   const [formState, setFormState] = useState({
@@ -19,10 +21,18 @@ export default function Login() {
     password: '',
   });
 
+  const [errors, setErrors] =
+    useState<ZodFormattedError<{ email: string; password: string }, string>>();
+
   const [signinWithEmailAndPassword, user, loading, googleOAuthError] =
     useSignInWithEmailAndPassword(auth);
 
   const dispatch = useAppDispatch();
+
+  const loginInputSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+  });
 
   const formInputChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
     setFormState((prevState) => ({
@@ -34,6 +44,19 @@ export default function Login() {
   // Firebase logic
   const submitHandler = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    // initialize errors
+    if (errors) setErrors(undefined);
+
+    // email and password validation
+    const validationResult = loginInputSchema.safeParse({
+      email: formState.email,
+      password: formState.password,
+    });
+    if (!validationResult.success) {
+      setErrors(validationResult.error.format());
+      return;
+    }
 
     signinWithEmailAndPassword(formState.email, formState.password);
   };
@@ -84,7 +107,29 @@ export default function Login() {
         />
         {/* <FormHelperText>Enter your password</FormHelperText> */}
       </FormControl>
-      <Button type="submit" width="100%" height="2rem" mt="2" mb="4">
+      {errors && (
+        <>
+          <Text textAlign="center" color="red.500" fontSize="xl">
+            {errors.email?._errors}
+          </Text>
+          <Text textAlign="center" color="red.500" fontSize="xl">
+            {errors.password?._errors}
+          </Text>
+        </>
+      )}
+      {googleOAuthError && (
+        <Text textAlign="center" color="red.500" fontSize="xl">
+          {FIREBASE_ERRORS[googleOAuthError.message]}
+        </Text>
+      )}
+      <Button
+        type="submit"
+        width="100%"
+        height="2rem"
+        mt="2"
+        mb="4"
+        isLoading={loading}
+      >
         Log in
       </Button>
       <Flex justifyContent="center">
