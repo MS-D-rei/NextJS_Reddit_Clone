@@ -61,10 +61,6 @@ export default function Login() {
     signinWithEmailAndPassword(formState.email, formState.password);
   };
 
-  const viewChangeHandler = () => {
-    dispatch(changeView('signup'));
-  };
-
   return (
     <form onSubmit={submitHandler}>
       <FormControl mb={4}>
@@ -132,13 +128,28 @@ export default function Login() {
       >
         Log in
       </Button>
+      <Flex justifyContent="center" mb={2}>
+        <Text mr={2}>Forget your password?</Text>
+        <Text
+          color="blue.500"
+          fontWeight={600}
+          cursor="pointer"
+          onClick={() => {
+            dispatch(changeView('resetPassword'));
+          }}
+        >
+          Reset
+        </Text>
+      </Flex>
       <Flex justifyContent="center">
         <Text mr={2}>New here?</Text>
         <Text
           color="blue.500"
           fontWeight={800}
           cursor="pointer"
-          onClick={viewChangeHandler}
+          onClick={() => {
+            dispatch(changeView('signup'));
+          }}
         >
           SIGN UP
         </Text>
