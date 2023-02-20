@@ -1,25 +1,26 @@
-import { Button, Flex } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
 import AuthButtons from '@/components/Navbar/RightContent/AuthButtons';
 import AuthModal from '@/components/Modal/Auth';
 import { signOut, User } from 'firebase/auth';
-import { useSignOut } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/clientApp';
+import Icons from '@/components/Navbar/RightContent/Icons';
 
 interface RightContentProps {
-  user: User | null | undefined;
+  user?: User | null;
 }
 
 const RightContent: React.FC<RightContentProps> = ({ user }) => {
   const signOutHandler = async () => {
     await signOut(auth);
-  }
+  };
 
   return (
     <>
       <AuthModal />
       <Flex justify="center" align="center">
-        {user ? <Button onClick={signOutHandler}>Log out</Button> : <AuthButtons />}
+        {user ? <Icons /> : <AuthButtons />}
       </Flex>
+      {/* <Menu /> */}
     </>
   );
 };
