@@ -7,4 +7,5 @@ export const FIREBASE_ERRORS: FirebaseErrors = {
     'A user with that email already exists',
   'Firebase: Error (auth/user-not-found).': 'User not found',
   'Firebase: Error (auth/wrong-password).': 'Wrong password',
+  'Firebase: Error (auth/invalid-email).': 'Invalid email',
 };
