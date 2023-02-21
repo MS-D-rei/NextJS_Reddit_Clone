@@ -8,12 +8,14 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
+  Text,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { FaRedditSquare } from 'react-icons/fa';
 import { VscAccount } from 'react-icons/vsc';
 import { CgProfile } from 'react-icons/cg';
 import { MdOutlineLogin } from 'react-icons/md';
+import { IoSparkles } from 'react-icons/io5';
 import { useAppDispatch } from '@/store/hooks';
 import { openModal } from '@/store/authModalSlice';
 
@@ -25,8 +27,8 @@ export default function UserMenu({ user }: UserMenuProps) {
   const dispatch = useAppDispatch();
 
   const openModalHandler = () => {
-    dispatch(openModal('login'))
-  }
+    dispatch(openModal('login'));
+  };
 
   const signOutHandler = () => {
     signOut(auth);
@@ -44,6 +46,22 @@ export default function UserMenu({ user }: UserMenuProps) {
           {user ? (
             <>
               <Icon as={FaRedditSquare} fontSize={24} mr={1} color="gray.300" />
+              <Flex
+                direction="column"
+                display={{ base: 'none', lg: 'flex' }}
+                fontSize='0.8rem'
+                mr={4}
+              >
+                <Flex justifyContent='center'>
+                  <Text fontWeight="700">
+                    {user?.displayName || user.email?.split('@')[0]}
+                  </Text>
+                </Flex>
+                <Flex alignItems="center">
+                  <Icon as={IoSparkles} color="brand.100" mr={1} />
+                  <Text color="gray.400">1 karma</Text>
+                </Flex>
+              </Flex>
             </>
           ) : (
             <Icon as={VscAccount} fontSize={24} mr={1} color="gray.400" />
