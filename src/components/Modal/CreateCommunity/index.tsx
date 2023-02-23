@@ -133,11 +133,13 @@ export default function CreateCommunityModal({
             </Box>
           </ModalBody>
         </Box>
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3}>
-            Close
+        <ModalFooter bg="gray.100" borderRadius="0px 0px 10px 10px">
+          <Button variant="outline" mr={3} onClick={() => {}}>
+            Cancel
           </Button>
-          <Button variant="ghost">Action</Button>
+          <Button variant="solid" onClick={() => {}}>
+            Action
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
