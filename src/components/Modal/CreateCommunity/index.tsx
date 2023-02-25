@@ -19,7 +19,13 @@ import {
 } from '@chakra-ui/react';
 import { BsFillEyeFill, BsFillPersonFill } from 'react-icons/bs';
 import { HiLockClosed } from 'react-icons/hi';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
 import { auth, firestore } from '@/firebase/clientApp';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
@@ -68,21 +74,45 @@ export default function CreateCommunityModal({
       // create community document in firestore.
       // doc(firestore: Firestore, path: string, ...pathSegments: string[]): DocumentReference<DocumentData>;
       const communityDocRef = doc(firestore, 'communities', communityName);
-      // getDoc<T>(reference: DocumentReference<T>): Promise<DocumentSnapshot<T>>;
-      const communityDoc = await getDoc(communityDocRef);
 
-      // check the community name is not taken.
-      if (communityDoc.exists()) {
-        throw new Error(`Sorry, ${communityName} is already taken. Try another.`);
-      }
+      // Transaction
+      // https://firebase.google.com/docs/firestore/manage-data/transactions
+      // if a transaction reads documents and another client modifies any of those documents, Cloud Firestore retries the transaction. This feature ensures that the transaction runs on up-to-date and consistent data.
+      // Transactions never partially apply writes. All writes execute at the end of a successful transaction.
+      // all transaction function succeeds, writes all. one transaction function fails, writes nothing.
 
-      // if valid name, create community.
-      // setDoc<T>(reference: DocumentReference<T>, data: WithFieldValue<T>): Promise<void>;
-      await setDoc(communityDocRef, {
-        createId: user?.uid,
-        createAt: serverTimestamp(),
-        numberOfMembers: 1,
-        privacyType: communityType,
+      // runTransaction<T>(firestore: Firestore, updateFunction: (transaction: Transaction) => Promise<T>, options?: TransactionOptions): Promise<T>;
+      await runTransaction(firestore, async (transaction) => {
+        // Transaction.get<T>(documentRef: DocumentReference<T>): Promise<DocumentSnapshot<T>>;
+        const communityDoc = await transaction.get(communityDocRef);
+
+        // check the community name is not taken.
+        if (communityDoc.exists()) {
+          throw new Error(
+            `Sorry, ${communityName} is already taken. Try another.`
+          );
+        }
+
+        // if valid name, create community.
+        // set<T>(documentRef: DocumentReference<T>, data: WithFieldValue<T>): this;
+        transaction.set(communityDocRef, {
+          createId: user?.uid,
+          createAt: serverTimestamp(),
+          numberOfMembers: 1,
+          privacyType: communityType,
+        });
+
+        // create communitySnippet on user
+        // collection/document/subcollection/document/subcollection/...
+        const communitySnippetDocRef = doc(
+          firestore,
+          `users/${user?.uid}/communitySnippets`,
+          communityName
+        );
+        transaction.set(communitySnippetDocRef, {
+          communityId: communityName,
+          isModerator: true,
+        });
       });
     } catch (err: any) {
       console.log(`create community error: ${err}`);
@@ -187,7 +217,11 @@ export default function CreateCommunityModal({
           <Button variant="outline" mr={3} onClick={() => {}}>
             Cancel
           </Button>
-          <Button isDisabled={isLoading} variant="solid" onClick={createCommunityHandler}>
+          <Button
+            isDisabled={isLoading}
+            variant="solid"
+            onClick={createCommunityHandler}
+          >
             Create
           </Button>
         </ModalFooter>
