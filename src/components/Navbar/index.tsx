@@ -20,9 +20,9 @@ export default function Navbar() {
         width={{ base: '40px', md: 'auto' }}
         mr={{ base: 0, md: 2 }}
       >
-        <Image src="images/redditFace.svg" alt="redditFace" height="2rem" />
+        <Image src="/images/redditFace.svg" alt="redditFace" height="2rem" />
         <Image
-          src="images/redditText.svg"
+          src="/images/redditText.svg"
           alt="redditText"
           height={'3rem'}
           display={{ base: 'none', md: 'unset' }}
