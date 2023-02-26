@@ -1,3 +1,4 @@
+import CommunityNotFound from '@/components/Community/CommunityNotFound';
 import { firestore } from '@/firebase/clientApp';
 import { ICommunity } from '@/store/communitySlice';
 import { doc, getDoc } from 'firebase/firestore';
@@ -52,7 +53,7 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
 
   if (!communityData) {
     return (
-      <div>The community does not exist</div>
+      <CommunityNotFound />
     )
   }
 
