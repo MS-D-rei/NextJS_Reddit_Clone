@@ -42,7 +42,9 @@ export default function Header({ communityData }: HeaderProps) {
     }
 
     if (isJoined) {
-      dispatch(leaveCommunity(communityData));
+      dispatch(
+        leaveCommunity({ communityId: communityData.id, userId: user.uid })
+      );
       return;
     }
     dispatch(joinCommunity({ communityData, user }));
