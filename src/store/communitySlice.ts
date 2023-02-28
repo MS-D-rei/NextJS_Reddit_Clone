@@ -49,11 +49,11 @@ export const communitySlice = createSlice({
     //     imageURL: action.payload.imageURL,
     //   });
     // },
-    leaveCommunity: (state, action: PayloadAction<ICommunity>) => {
-      state.snippets = state.snippets.filter(
-        (communitySnippet) => communitySnippet.communityId !== action.payload.id
-      );
-    },
+    // leaveCommunity: (state, action: PayloadAction<ICommunity>) => {
+    //   state.snippets = state.snippets.filter(
+    //     (communitySnippet) => communitySnippet.communityId !== action.payload.id
+    //   );
+    // },
     resetCommunityState: (state) => {
       state.snippets = [];
       state.isLoading = false;
@@ -81,22 +81,40 @@ export const communitySlice = createSlice({
       state.isLoading = true;
       state.error = null;
     }),
-    builder.addCase(joinCommunity.fulfilled, (state, action) => {
-      state.snippets.push(action.payload);
-      state.isLoading = false;
+      builder.addCase(joinCommunity.fulfilled, (state, action) => {
+        state.snippets.push(action.payload);
+        state.isLoading = false;
+      }),
+      builder.addCase(joinCommunity.rejected, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          state.error = action.payload;
+        } else {
+          state.error = action.error;
+        }
+      });
+    builder.addCase(leaveCommunity.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
     }),
-    builder.addCase(joinCommunity.rejected, (state, action) => {
-      state.isLoading = false;
-      if (action.payload) {
-        state.error = action.payload;
-      } else {
-        state.error = action.error;
-      }
-    })
+      builder.addCase(leaveCommunity.fulfilled, (state, action) => {
+        state.snippets = state.snippets.filter(
+          (snippet) => snippet.communityId !== action.payload
+        );
+        state.isLoading = false;
+      }),
+      builder.addCase(leaveCommunity.rejected, (state, action) => {
+        state.isLoading = false;
+        if (action.payload) {
+          state.error = action.payload;
+        } else {
+          state.error = action.error;
+        }
+      });
   },
 });
 
-export const { leaveCommunity, resetCommunityState } = communitySlice.actions;
+export const { resetCommunityState } = communitySlice.actions;
 
 export default communitySlice.reducer;
 
@@ -151,11 +169,44 @@ export const joinCommunity = createAsyncThunk<
 
     return newCommunitySnippet;
   } catch (err) {
-    console.log(err);
+    console.log(`joinCommunity function Error: ${err}`);
     if (err instanceof FirestoreError) {
       return thunkAPI.rejectWithValue(err.message);
     } else {
       return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
     }
+  }
+});
+
+export const leaveCommunity = createAsyncThunk<
+  string,
+  { communityId: string; userId: string },
+  { rejectValue: string; serializedErrorType: string }
+>('community/leave', async ({ communityId, userId }, thunkAPI) => {
+  // batch writes
+  try {
+    const batch = writeBatch(firestore);
+    // delete the community snippet from user's communitySnippets
+    batch.delete(
+      doc(firestore, `users/${userId}/communitySnippets`, communityId)
+    );
+
+    // decrease the number of members of the community.
+    batch.update(doc(firestore, 'communities', communityId), {
+      numberOfMembers: increment(-1),
+    });
+
+    await batch.commit();
+
+    return communityId;
+  } catch (err) {
+    console.log(`leaveCommunity function Error: ${err}`);
+    if (err instanceof Error) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
+    }
+    if (err instanceof FirestoreError) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+    return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
   }
 });
