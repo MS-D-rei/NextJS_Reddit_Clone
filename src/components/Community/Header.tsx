@@ -1,5 +1,14 @@
-import { ICommunity } from '@/store/communitySlice';
+import { auth } from '@/firebase/clientApp';
+import {
+  getAllCommunitySnippets,
+  ICommunity,
+  joinCommunity,
+  leaveCommunity,
+} from '@/store/communitySlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { Box, Button, Flex, Icon, Image, Text } from '@chakra-ui/react';
+import { useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import { FaReddit } from 'react-icons/fa';
 
 interface HeaderProps {
@@ -7,8 +16,37 @@ interface HeaderProps {
 }
 
 export default function Header({ communityData }: HeaderProps) {
-  // read isJoined from communitySlice
-  const isJoined = false;
+  const dispatch = useAppDispatch();
+  const [user] = useAuthState(auth);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    dispatch(getAllCommunitySnippets({ user }));
+  }, [user]);
+
+  const userCommunityState = useAppSelector((state) => state.community);
+
+  const isJoined = !!userCommunityState.snippets.find(
+    (snippet) => snippet.communityId === communityData.id
+  );
+
+  const communityJoinStateHandler = (
+    communityData: ICommunity,
+    isJoined: boolean
+  ) => {
+    if (!user) {
+      // redirect to login page
+      return;
+    }
+
+    if (isJoined) {
+      dispatch(leaveCommunity(communityData));
+      return;
+    }
+    dispatch(joinCommunity({ communityData, user }));
+  };
 
   return (
     <Flex direction="column" width="100%" height="10rem">
@@ -26,7 +64,6 @@ export default function Header({ communityData }: HeaderProps) {
               borderRadius="50%"
               position="relative"
               top={-3}
-              // left={-3}
             />
           )}
           <Flex direction="column" padding="1rem 1rem">
@@ -42,11 +79,12 @@ export default function Header({ communityData }: HeaderProps) {
             height="2rem"
             mt={4}
             ml={4}
-            // change isJoined state
-            onClick={() => {}}
+            isLoading={userCommunityState.isLoading}
+            onClick={() => communityJoinStateHandler(communityData, isJoined)}
           >
             {isJoined ? 'Joined' : 'Join'}
           </Button>
+          <Text color="red">{userCommunityState.error}</Text>
         </Flex>
       </Flex>
     </Flex>
