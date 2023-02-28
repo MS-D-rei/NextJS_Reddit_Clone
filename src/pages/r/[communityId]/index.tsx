@@ -1,8 +1,35 @@
-import CommunityNotFound from '@/components/Community/CommunityNotFound';
+import { GetServerSidePropsContext } from 'next';
+import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase/clientApp';
 import { ICommunity } from '@/store/communitySlice';
-import { doc, getDoc } from 'firebase/firestore';
-import { GetServerSidePropsContext } from 'next';
+import CommunityNotFound from '@/components/Community/CommunityNotFound';
+import Header from '@/components/Community/Header';
+import PageContentLayout from '@/components/Layout/PageContentLayout';
+
+interface CommunityPageProps {
+  communityData: ICommunity;
+}
+
+export default function CommunityPage({ communityData }: CommunityPageProps) {
+  // console.log(communityData);
+
+  if (!communityData) {
+    return <CommunityNotFound />;
+  }
+
+  return (
+    <>
+      <Header communityData={communityData} />
+      <PageContentLayout>
+        <>
+          <div>left side content</div>
+          <div>1st post</div>
+        </>
+        <>right side content</>
+      </PageContentLayout>
+    </>
+  );
+}
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   try {
@@ -16,9 +43,9 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     if (!communityDoc.exists()) {
       return {
         props: {
-          communityData: ''
-        }
-      }
+          communityData: '',
+        },
+      };
     }
 
     const communityDocData = communityDoc.data();
@@ -42,20 +69,4 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   } catch (err) {
     console.log(`getServerSideProps error: ${err}`);
   }
-}
-
-interface CommunityPageProps {
-  communityData: ICommunity;
-}
-
-export default function CommunityPage({ communityData }: CommunityPageProps) {
-  // console.log(communityData);
-
-  if (!communityData) {
-    return (
-      <CommunityNotFound />
-    )
-  }
-
-  return <div>{communityData.id}</div>;
 }
