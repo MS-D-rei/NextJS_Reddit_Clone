@@ -18,6 +18,7 @@ import { MdOutlineLogin } from 'react-icons/md';
 import { IoSparkles } from 'react-icons/io5';
 import { useAppDispatch } from '@/store/hooks';
 import { openModal } from '@/store/authModalSlice';
+import { resetCommunityState } from '@/store/communitySlice';
 
 interface UserMenuProps {
   user?: User | null;
@@ -30,8 +31,11 @@ export default function UserMenu({ user }: UserMenuProps) {
     dispatch(openModal('login'));
   };
 
-  const signOutHandler = () => {
-    signOut(auth);
+  const signOutHandler = async () => {
+    await signOut(auth);
+
+    // clear community state
+    dispatch(resetCommunityState());
   };
 
   return (
