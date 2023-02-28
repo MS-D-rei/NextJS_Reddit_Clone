@@ -1,12 +1,10 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { User } from 'firebase/auth';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   collection,
   doc,
   FirestoreError,
   getDocs,
   increment,
-  runTransaction,
   Timestamp,
   writeBatch,
 } from 'firebase/firestore';
@@ -43,17 +41,6 @@ export const communitySlice = createSlice({
   name: 'community',
   initialState,
   reducers: {
-    // joinCommunity: (state, action: PayloadAction<ICommunity>) => {
-    //   state.snippets.push({
-    //     communityId: action.payload.id,
-    //     imageURL: action.payload.imageURL,
-    //   });
-    // },
-    // leaveCommunity: (state, action: PayloadAction<ICommunity>) => {
-    //   state.snippets = state.snippets.filter(
-    //     (communitySnippet) => communitySnippet.communityId !== action.payload.id
-    //   );
-    // },
     resetCommunityState: (state) => {
       state.snippets = [];
       state.isLoading = false;
@@ -118,14 +105,16 @@ export const { resetCommunityState } = communitySlice.actions;
 
 export default communitySlice.reducer;
 
+/* Async Thunk */
+
 export const getAllCommunitySnippets = createAsyncThunk<
   ICommunitySnippet[],
-  { user: User },
+  { userId: string },
   { rejectValue: string; serializedErrorType: string }
->('community/fetchAllSnippets', async ({ user }, thunkAPI) => {
+>('community/fetchAllSnippets', async ({ userId }, thunkAPI) => {
   try {
     const allSnippetsDocs = await getDocs(
-      collection(firestore, `users/${user?.uid}/communitySnippets`)
+      collection(firestore, `users/${userId}/communitySnippets`)
     );
     const allSnippets = allSnippetsDocs.docs.map((doc) => ({
       ...doc.data(),
@@ -143,9 +132,9 @@ export const getAllCommunitySnippets = createAsyncThunk<
 
 export const joinCommunity = createAsyncThunk<
   ICommunitySnippet,
-  { communityData: ICommunity; user: User },
+  { communityData: ICommunity; userId: string },
   { rejectValue: string; serializedErrorType: string }
->('community/join', async ({ communityData, user }, thunkAPI) => {
+>('community/join', async ({ communityData, userId }, thunkAPI) => {
   // batched writes
   try {
     // add a new community snippet to user's community snippets[]
@@ -156,7 +145,7 @@ export const joinCommunity = createAsyncThunk<
       imageURL: communityData.imageURL || '',
     };
     batch.set(
-      doc(firestore, `users/${user.uid}/communitySnippets`, communityData.id),
+      doc(firestore, `users/${userId}/communitySnippets`, communityData.id),
       newCommunitySnippet
     );
 
@@ -170,11 +159,13 @@ export const joinCommunity = createAsyncThunk<
     return newCommunitySnippet;
   } catch (err) {
     console.log(`joinCommunity function Error: ${err}`);
-    if (err instanceof FirestoreError) {
-      return thunkAPI.rejectWithValue(err.message);
-    } else {
-      return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
+    if (err instanceof Error) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
     }
+    if (err instanceof FirestoreError) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
+    }
+    return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
   }
 });
 
@@ -205,7 +196,7 @@ export const leaveCommunity = createAsyncThunk<
       return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
     }
     if (err instanceof FirestoreError) {
-      return thunkAPI.rejectWithValue(err.message);
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
     }
     return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
   }

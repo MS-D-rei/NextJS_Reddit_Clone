@@ -23,7 +23,7 @@ export default function Header({ communityData }: HeaderProps) {
     if (!user) {
       return;
     }
-    dispatch(getAllCommunitySnippets({ user }));
+    dispatch(getAllCommunitySnippets({ userId: user.uid }));
   }, [user]);
 
   const userCommunityState = useAppSelector((state) => state.community);
@@ -42,12 +42,10 @@ export default function Header({ communityData }: HeaderProps) {
     }
 
     if (isJoined) {
-      dispatch(
-        leaveCommunity({ communityId: communityData.id, userId: user.uid })
-      );
+      dispatch(leaveCommunity({communityId: communityData.id, userId: user.uid}));
       return;
     }
-    dispatch(joinCommunity({ communityData, user }));
+    dispatch(joinCommunity({ communityData, userId: user.uid }));
   };
 
   return (
