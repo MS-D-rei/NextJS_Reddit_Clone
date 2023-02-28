@@ -5,6 +5,7 @@ import { ICommunity } from '@/store/communitySlice';
 import CommunityNotFound from '@/components/Community/CommunityNotFound';
 import Header from '@/components/Community/Header';
 import PageContentLayout from '@/components/Layout/PageContentLayout';
+import CreatePostLink from '@/components/Community/CreatePostLink';
 
 interface CommunityPageProps {
   communityData: ICommunity;
@@ -22,7 +23,7 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
       <Header communityData={communityData} />
       <PageContentLayout>
         <>
-          <div>left side content</div>
+          <CreatePostLink />
           <div>1st post</div>
         </>
         <>right side content</>
