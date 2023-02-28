@@ -1,4 +1,5 @@
 import { auth } from '@/firebase/clientApp';
+import { openModal } from '@/store/authModalSlice';
 import {
   getAllCommunitySnippets,
   ICommunity,
@@ -37,7 +38,8 @@ export default function Header({ communityData }: HeaderProps) {
     isJoined: boolean
   ) => {
     if (!user) {
-      // redirect to login page
+      // open auth modal
+      dispatch(openModal('login'));
       return;
     }
 
