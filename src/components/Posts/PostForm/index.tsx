@@ -48,6 +48,7 @@ export default function NewPostForm() {
       <Flex width="100%">
         {formTabs.map((tab) => (
           <TabItem
+            key={tab.title}
             formTab={tab}
             selected={tab.title === selectedTab}
             setTab={setSelectedTab}
