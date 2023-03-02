@@ -1,6 +1,5 @@
-import { Dispatch, SetStateAction } from 'react';
 import { Flex, Icon, Text } from '@chakra-ui/react';
-import { IFormTab } from '@/components/Posts/NewPostForm';
+import { IFormTab } from '@/components/Posts/PostForm';
 
 interface TabItemProps {
   formTab: IFormTab;
@@ -19,6 +18,7 @@ export default function TabItem({ formTab, selected, setTab }: TabItemProps) {
       alignItems="center"
       justifyContent="space-evenly"
       flexGrow={1}
+      fontSize={{ base: 'sm', sm: '1rem' }}
       fontWeight={700}
       padding="1rem 0"
       cursor="pointer"
