@@ -7,6 +7,18 @@ import { IconType } from 'react-icons';
 import TabItem from '@/components/Posts/PostForm/TabItem';
 import TextInputs from '@/components/Posts/PostForm/TextInputs';
 import ImageUpload from '@/components/Posts/PostForm/ImageUpload';
+import { IPost } from '@/store/postSlice';
+import { useRouter } from 'next/router';
+import { User } from 'firebase/auth';
+import {
+  addDoc,
+  collection,
+  FirestoreError,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
+import { firestore, storage } from '@/firebase/clientApp';
+import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 
 export interface IFormTab {
   title: string;
@@ -21,7 +33,13 @@ const formTabs: IFormTab[] = [
   { title: 'Talk', icon: BsMic },
 ];
 
-export default function NewPostForm() {
+interface NewPostFormProps {
+  user: User;
+}
+
+export default function NewPostForm({ user }: NewPostFormProps) {
+  const router = useRouter();
+
   const [selectedTab, setSelectedTab] = useState(formTabs[0].title);
   const [postText, setPostText] = useState({
     title: '',
@@ -68,8 +86,52 @@ export default function NewPostForm() {
     };
   };
 
-  const submitHandler = (event: FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    setIsLoading(true);
+
+    const { communityId } = router.query;
+    const postData: IPost = {
+      communityId: communityId as string,
+      creatorId: user.uid,
+      createDisplayName: user.email!.split('@')[0],
+      title: postText.title,
+      description: postText.description,
+      numberOfComments: 0,
+      voteStatus: 0,
+      createAt: serverTimestamp(),
+    };
+
+    try {
+      // add post document with firestore auto-generated id
+      const postDocRef = await addDoc(collection(firestore, 'posts'), postData);
+
+      // check the selectedFile
+      if (selectedFile) {
+        const imageRef = ref(storage, `posts/${postDocRef.id}/image`);
+        await uploadString(imageRef, selectedFile, 'data_url');
+        // getDownloadURL() return imageURL as string
+        const downloadURL = await getDownloadURL(imageRef);
+
+        // update the post by adding imageURL
+        await updateDoc(postDocRef, {
+          imageURL: downloadURL,
+        });
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`${err.name}: ${err.message}`);
+      }
+      if (err instanceof FirestoreError) {
+        console.log(`${err.name}: ${err.message}`);
+      }
+    }
+
+    setIsLoading(false);
+
+    //  redirect the user backt to the communityPage using router
+
   };
 
   return (
