@@ -1,13 +1,16 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
-import { Flex } from '@chakra-ui/react';
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  Flex,
+  Text,
+} from '@chakra-ui/react';
 import { BsLink45Deg, BsMic } from 'react-icons/bs';
 import { IoDocumentText, IoImageOutline } from 'react-icons/io5';
 import { BiPoll } from 'react-icons/bi';
 import { IconType } from 'react-icons';
-import TabItem from '@/components/Post/PostForm/TabItem';
-import TextInputs from '@/components/Post/PostForm/TextInputs';
-import ImageUpload from '@/components/Post/PostForm/ImageUpload';
-import { IPost } from '@/store/postSlice';
 import { useRouter } from 'next/router';
 import { User } from 'firebase/auth';
 import {
@@ -17,8 +20,12 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { firestore, storage } from '@/firebase/clientApp';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import { firestore, storage } from '@/firebase/clientApp';
+import TabItem from '@/components/Post/PostForm/TabItem';
+import TextInputs from '@/components/Post/PostForm/TextInputs';
+import ImageUpload from '@/components/Post/PostForm/ImageUpload';
+import { IPost } from '@/store/postSlice';
 
 export interface IFormTab {
   title: string;
@@ -47,6 +54,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
   });
   const [selectedFile, setSelectedFile] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
+  const [submitPostError, setSubmitPostError] = useState('');
 
   const postTextChangeHandler = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -91,6 +99,16 @@ export default function NewPostForm({ user }: NewPostFormProps) {
 
     setIsLoading(true);
 
+    // initialize submitPostError
+    setSubmitPostError('');
+
+    // no title or no description => error
+    if (postText.title === '' || postText.description === '') {
+      setSubmitPostError('please input title and description both');
+      setIsLoading(false);
+      return;
+    }
+
     const { communityId } = router.query;
     const postData: IPost = {
       communityId: communityId as string,
@@ -110,6 +128,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
       // check the selectedFile
       if (selectedFile) {
         const imageRef = ref(storage, `posts/${postDocRef.id}/image`);
+        // uploadString(ref: StorageReference, value: string, format?: StringFormat | undefined, metadata?: UploadMetadata | undefined): Promise<UploadResult>
         await uploadString(imageRef, selectedFile, 'data_url');
         // getDownloadURL() return imageURL as string
         const downloadURL = await getDownloadURL(imageRef);
@@ -122,16 +141,17 @@ export default function NewPostForm({ user }: NewPostFormProps) {
     } catch (err) {
       if (err instanceof Error) {
         console.log(`${err.name}: ${err.message}`);
+        setSubmitPostError(err.message);
       }
       if (err instanceof FirestoreError) {
         console.log(`${err.name}: ${err.message}`);
+        setSubmitPostError(err.message);
       }
     }
 
     setIsLoading(false);
 
     //  redirect the user backt to the communityPage using router
-
   };
 
   return (
@@ -148,21 +168,30 @@ export default function NewPostForm({ user }: NewPostFormProps) {
         ))}
       </Flex>
       {/* PostForm Text Inputs */}
-      {selectedTab === 'Post' && (
-        <TextInputs
-          postText={postText}
-          postTextChangeHandler={postTextChangeHandler}
-          submitHandler={submitHandler}
-          isLoading={isLoading}
-        />
-      )}
-      {selectedTab === 'Images & Video' && (
-        <ImageUpload
-          selectedFile={selectedFile}
-          setSelectedFile={setSelectedFile}
-          imageVideoChangeHandler={imageVideoFileChangeHandler}
-          setSelectedTab={setSelectedTab}
-        />
+      <Flex padding={4}>
+        {selectedTab === 'Post' && (
+          <TextInputs
+            postText={postText}
+            postTextChangeHandler={postTextChangeHandler}
+            submitHandler={submitHandler}
+            isLoading={isLoading}
+          />
+        )}
+        {selectedTab === 'Images & Video' && (
+          <ImageUpload
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
+            imageVideoChangeHandler={imageVideoFileChangeHandler}
+            setSelectedTab={setSelectedTab}
+          />
+        )}
+      </Flex>
+      {submitPostError && (
+        <Alert status="error">
+          <AlertIcon />
+          <AlertTitle>Creating post error</AlertTitle>
+          <AlertDescription>{submitPostError}</AlertDescription>
+        </Alert>
       )}
     </Flex>
   );
