@@ -1,5 +1,5 @@
 import { Flex, Icon, Text } from '@chakra-ui/react';
-import { IFormTab } from '@/components/Posts/PostForm';
+import { IFormTab } from '@/components/Post/PostForm';
 
 interface TabItemProps {
   formTab: IFormTab;

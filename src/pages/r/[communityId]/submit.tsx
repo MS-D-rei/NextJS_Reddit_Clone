@@ -1,6 +1,6 @@
 import { Box, Text } from '@chakra-ui/react';
 import PageContentLayout from '@/components/Layout/PageContentLayout';
-import NewPostForm from '@/components/Posts/PostForm';
+import NewPostForm from '@/components/Post/PostForm';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/clientApp';
 
