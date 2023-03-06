@@ -31,7 +31,7 @@ export default function TextInputs({ postText, postTextChangeHandler, submitHand
           name="description"
           value={postText.description}
           placeholder="description"
-          height="xs"
+          height="200px"
           borderRadius={4}
           _placeholder={{ color: 'gray.500' }}
           _focus={{
