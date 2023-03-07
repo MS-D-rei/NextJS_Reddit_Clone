@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import {
   collection,
   doc,
+  FieldValue,
   FirestoreError,
   getDocs,
   increment,
@@ -15,7 +16,7 @@ export interface ICommunity {
   creatorId: string;
   numberOfMembers: number;
   privacyType: 'public' | 'restricted' | 'private';
-  createdAt?: Timestamp;
+  createdAt?: Timestamp | FieldValue;
   imageURL?: string;
 }
 
