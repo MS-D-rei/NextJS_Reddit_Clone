@@ -15,11 +15,11 @@ export interface ICommunity {
   creatorId: string;
   numberOfMembers: number;
   privacyType: 'public' | 'restricted' | 'private';
-  createAt?: Timestamp;
+  createdAt?: Timestamp;
   imageURL?: string;
 }
 
-interface ICommunitySnippet {
+export interface ICommunitySnippet {
   communityId: string;
   isModerator?: boolean;
   imageURL?: string;
