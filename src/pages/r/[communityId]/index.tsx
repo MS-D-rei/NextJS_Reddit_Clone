@@ -1,5 +1,5 @@
 import { GetServerSidePropsContext } from 'next';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDocFromServer } from 'firebase/firestore';
 import { firestore } from '@/firebase/clientApp';
 import { ICommunity } from '@/store/communitySlice';
 import CommunityNotFound from '@/components/Community/CommunityNotFound';
@@ -12,7 +12,7 @@ interface CommunityPageProps {
 }
 
 export default function CommunityPage({ communityData }: CommunityPageProps) {
-  // console.log(communityData);
+  console.log(communityData);
 
   if (!communityData) {
     return <CommunityNotFound />;
@@ -33,15 +33,19 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
 }
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
+  // console.log(context.query.communityId);
+
   try {
     const communityDocRef = doc(
       firestore,
       'communities',
       context.query.communityId as string
     );
-    const communityDoc = await getDoc(communityDocRef);
+    const communityDoc = await getDocFromServer(communityDocRef);
+    // console.log(communityDoc);
 
     if (!communityDoc.exists()) {
+      console.log('communityDoc does not exist')
       return {
         props: {
           communityData: '',
@@ -49,18 +53,23 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       };
     }
 
-    const communityDocData = communityDoc.data();
+    // extract data from community document snapshot
+    const communityDocData = communityDoc.data() as ICommunity;
     // console.log(communityDocData);
-    /* {
-      numberOfMembers: 1,
-      createAt: { seconds: 1677330119, nanoseconds: 136000000 },
-      createId: 'sbm2HFxb5GVnIh501GI4H1zOhuo2',
-      privacyType: 'public' } */
-    const communityData = {
-      ...communityDocData,
-      id: communityDoc.id,
-      createAt: communityDocData?.createAt?.toJSON(),
-    };
+    /* { id: 'FirstCommu',
+    creatorId: 'sbm2HFxb5GVnIh501GI4H1zOhuo2',
+    numberOfMembers: 1,
+    privacyType: 'public',
+    createdAt: { seconds: 1678166418, nanoseconds: 911000000 }} */
+    const communityData: ICommunity = JSON.parse(JSON.stringify({
+      id: communityDocData.id,
+      creatorId: communityDocData.creatorId,
+      numberOfMembers: communityDocData.numberOfMembers,
+      privacyType: communityDocData.privacyType,
+      createdAt: communityDocData.createdAt,
+    }));
+
+    // console.log(communityData);
 
     return {
       props: {
