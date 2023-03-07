@@ -118,7 +118,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
       description: postText.description,
       numberOfComments: 0,
       voteStatus: 0,
-      createAt: serverTimestamp(),
+      createdAt: serverTimestamp(),
     };
 
     try {

@@ -12,7 +12,7 @@ export interface IPost {
   voteStatus: number;
   imageURL?: string;
   communityImageURL? : string;
-  createAt?: Timestamp | FieldValue;
+  createdAt?: Timestamp | FieldValue;
 }
 
 interface PostState {
