@@ -21,18 +21,20 @@ import { BsFillEyeFill, BsFillPersonFill } from 'react-icons/bs';
 import { HiLockClosed } from 'react-icons/hi';
 import {
   doc,
-  getDoc,
   runTransaction,
   serverTimestamp,
-  setDoc,
+  Timestamp,
 } from 'firebase/firestore';
-import { auth, firestore } from '@/firebase/clientApp';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, firestore } from '@/firebase/clientApp';
+import { ICommunity, ICommunitySnippet } from '@/store/communitySlice';
 
 interface CreateCommunityProps {
   isOpen: boolean;
   onCloseHandler: () => void;
 }
+
+type CommunityType = 'public' | 'restricted' | 'private';
 
 export default function CreateCommunityModal({
   isOpen,
@@ -40,7 +42,7 @@ export default function CreateCommunityModal({
 }: CreateCommunityProps) {
   const [communityName, setCommunityName] = useState('');
   const [charsRemaingingNumber, setCharsRemainingNumber] = useState(21);
-  const [communityType, setCommunityType] = useState('public');
+  const [communityType, setCommunityType] = useState<CommunityType>('public');
   const [nameError, setNameError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,12 +56,13 @@ export default function CreateCommunityModal({
   };
 
   const communityTypeChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
-    setCommunityType(event.target.name);
+    setCommunityType(event.target.name as CommunityType);
   };
 
   const createCommunityHandler = async () => {
     // initialize nameError.
     if (nameError) setNameError('');
+
     // validate the community name.
     const format = /[ `!@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?~]/;
     if (format.test(communityName) || communityName.length < 3) {
@@ -71,7 +74,7 @@ export default function CreateCommunityModal({
     setIsLoading(true);
 
     try {
-      // create community document in firestore.
+      // create new community's document reference with communityName as ID
       // doc(firestore: Firestore, path: string, ...pathSegments: string[]): DocumentReference<DocumentData>;
       const communityDocRef = doc(firestore, 'communities', communityName);
 
@@ -92,27 +95,36 @@ export default function CreateCommunityModal({
             `Sorry, ${communityName} is already taken. Try another.`
           );
         }
-
-        // if valid name, create community.
-        // set<T>(documentRef: DocumentReference<T>, data: WithFieldValue<T>): this;
-        transaction.set(communityDocRef, {
-          createId: user?.uid,
-          createAt: serverTimestamp(),
+ 
+        // prepare new community data with type safe
+        const newCommunityData: ICommunity = {
+          id: communityName,
+          creatorId: user!.uid,
           numberOfMembers: 1,
           privacyType: communityType,
-        });
+          createdAt: serverTimestamp() as Timestamp,
+        }
 
-        // create communitySnippet on user
+        // set the new data to the new community document reference
+        // set<T>(documentRef: DocumentReference<T>, data: WithFieldValue<T>): this;
+        transaction.set(communityDocRef, newCommunityData);
+
+        // add communitySnippet document reference with communityName as ID
         // collection/document/subcollection/document/subcollection/...
         const communitySnippetDocRef = doc(
           firestore,
           `users/${user?.uid}/communitySnippets`,
           communityName
         );
-        transaction.set(communitySnippetDocRef, {
+
+        // prepare new data with type safe
+        const newCommunitySnippetData: ICommunitySnippet = {
           communityId: communityName,
           isModerator: true,
-        });
+        }
+
+        // set the data to communitySnippet document reference
+        transaction.set(communitySnippetDocRef, newCommunitySnippetData);
       });
     } catch (err: any) {
       console.log(`create community error: ${err}`);
