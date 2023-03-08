@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authModalReducer from '@/store/authModalSlice';
 import communityReducer from '@/store/communitySlice';
-import postReducer from '@/store/postSlice'
+import postReducer from '@/store/postSlice';
 
 export const store = configureStore({
   reducer: {

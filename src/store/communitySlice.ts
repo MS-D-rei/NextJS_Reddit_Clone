@@ -112,7 +112,7 @@ export const getAllCommunitySnippets = createAsyncThunk<
   ICommunitySnippet[],
   { userId: string },
   { rejectValue: string; serializedErrorType: string }
->('community/fetchAllSnippets', async ({ userId }, thunkAPI) => {
+>('community/getAllSnippets', async ({ userId }, thunkAPI) => {
   try {
     const allSnippetsDocs = await getDocs(
       collection(firestore, `users/${userId}/communitySnippets`)

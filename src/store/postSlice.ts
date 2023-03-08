@@ -72,7 +72,7 @@ export const getAllPosts = createAsyncThunk<
   IPost[],
   { communityId: string },
   { rejectValue: string; serializedErrorType: string }
->('posts/fetchAllposts', async ({ communityId }, thunkAPI) => {
+>('post/getAllPosts', async ({ communityId }, thunkAPI) => {
   try {
     const postsQuery = query(
       collection(firestore, 'posts'),
