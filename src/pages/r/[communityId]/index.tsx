@@ -6,13 +6,14 @@ import CommunityNotFound from '@/components/Community/CommunityNotFound';
 import Header from '@/components/Community/Header';
 import PageContentLayout from '@/components/Layout/PageContentLayout';
 import CreatePostLink from '@/components/Community/CreatePostLink';
+import PostList from '@/components/Post/PostList';
 
 interface CommunityPageProps {
   communityData: ICommunity;
 }
 
 export default function CommunityPage({ communityData }: CommunityPageProps) {
-  console.log(communityData);
+  // console.log(communityData);
 
   if (!communityData) {
     return <CommunityNotFound />;
@@ -25,6 +26,7 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
         <>
           <CreatePostLink />
           <div>1st post</div>
+          <PostList communityData={communityData} />
         </>
         <>right side content</>
       </PageContentLayout>
