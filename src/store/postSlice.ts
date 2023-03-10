@@ -1,5 +1,5 @@
 import { firestore } from '@/firebase/clientApp';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   collection,
   FieldValue,
@@ -43,7 +43,11 @@ const initialState: PostState = {
 export const postSlice = createSlice({
   name: 'post',
   initialState,
-  reducers: {},
+  reducers: {
+    selectPost: (state, action: PayloadAction<IPost>) => {
+      state.selectedPost = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getAllPosts.pending, (state) => {
       state.isLoading = true;
@@ -64,7 +68,7 @@ export const postSlice = createSlice({
   },
 });
 
-export const {} = postSlice.actions;
+export const { selectPost } = postSlice.actions;
 
 export default postSlice.reducer;
 
@@ -83,7 +87,7 @@ export const getAllPosts = createAsyncThunk<
     const posts = postDocs.docs.map((doc) =>
       JSON.parse(JSON.stringify({ id: doc.id, ...doc.data() }))
     );
-    console.log(posts);
+    // console.log(posts);
     return posts;
   } catch (err) {
     console.log(err);
