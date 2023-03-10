@@ -25,7 +25,6 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
       <PageContentLayout>
         <>
           <CreatePostLink />
-          <div>1st post</div>
           <PostList communityData={communityData} />
         </>
         <>right side content</>
