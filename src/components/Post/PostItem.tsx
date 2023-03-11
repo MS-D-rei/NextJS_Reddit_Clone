@@ -1,7 +1,17 @@
 import { useAppDispatch } from '@/store/hooks';
 import { IPost, selectPost } from '@/store/postSlice';
 import { Flex, Icon, Image, Text } from '@chakra-ui/react';
-import { IoArrowDownCircleOutline, IoArrowDownCircleSharp, IoArrowUpCircleOutline, IoArrowUpCircleSharp } from 'react-icons/io5';
+import {
+  IoArrowDownCircleOutline,
+  IoArrowDownCircleSharp,
+  IoArrowRedoOutline,
+  IoArrowUpCircleOutline,
+  IoArrowUpCircleSharp,
+  IoBookmarkOutline,
+} from 'react-icons/io5';
+import { AiOutlineDelete } from 'react-icons/ai'
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
+import { BsChat } from 'react-icons/bs';
 
 interface PostItemProps {
   post: IPost;
@@ -16,11 +26,19 @@ export default function PostItem({
 }: PostItemProps) {
   const dispatch = useAppDispatch();
 
+  const postCreatedTimeDistanceToNow = formatDistanceToNow(
+    new Date(post.createdAt.seconds * 1000)
+  );
+
+  console.log(new Date(post.createdAt.seconds * 1000));
+
   const selectPostHandler = () => {
     dispatch(selectPost(post));
   };
 
   const voteHandler = () => {};
+
+  const deletePostHandler = () => {};
 
   return (
     <Flex
@@ -36,7 +54,7 @@ export default function PostItem({
       {/* gray bar */}
       <Flex
         direction="column"
-        alignItems='center'
+        alignItems="center"
         bg="gray.100"
         padding={2}
         width="40px"
@@ -46,7 +64,7 @@ export default function PostItem({
           as={voteValue === 1 ? IoArrowUpCircleSharp : IoArrowUpCircleOutline}
           color={voteValue === 1 ? 'brand.100' : 'gray.400'}
           fontSize={22}
-          cursor='pointer'
+          cursor="pointer"
           onClick={voteHandler}
         />
         <Text fontWeight={500}>{post.voteStatus}</Text>
@@ -54,19 +72,74 @@ export default function PostItem({
           as={true ? IoArrowDownCircleSharp : IoArrowDownCircleOutline}
           color={voteValue === 1 ? '#4379ff' : 'gray.400'}
           fontSize={22}
-          cursor='pointer'
+          cursor="pointer"
           onClick={voteHandler}
         />
       </Flex>
       {/* post content */}
-      <Flex direction="column" width='100%'>
-        <Flex direction='row' alignItems='center'>
-          <Text fontSize='9pt' color='gray.500' mr={2}>Posted by u/{post.createDisplayName}</Text>
-          <Text fontSize='9pt' color='gray.500'>1 day ago</Text>
+      <Flex direction="column" width="100%">
+        {/* post by and time diff */}
+        <Flex direction="row" alignItems="center" mt={2} mb={2} ml={3}>
+          <Text fontSize="9pt" color="gray.500" mr={2}>
+            Posted by u/{post.createDisplayName}
+          </Text>
+          <Text fontSize="9pt" color="gray.500">
+            {postCreatedTimeDistanceToNow} ago
+          </Text>
         </Flex>
-        <Text>{post.title}</Text>
-        <Text>{post.description}</Text>
-        <Image src={post.imageURL} boxSize='300px' />
+        {/* title and description */}
+        <Flex direction='column' ml={3}>
+          <Text fontSize="12pt" fontWeight={600}>
+            {post.title}
+          </Text>
+          <Text fontSize="10pt">{post.description}</Text>
+        </Flex>
+        {/* post image */}
+        {post.imageURL && (
+          <Flex justifyContent="center" padding={2}>
+            <Image src={post.imageURL} maxHeight="460px" alt="Post Image" />
+          </Flex>
+        )}
+        {/* post bottom bar */}
+        <Flex color="gray.500" fontWeight={600} ml={1} mb={0.5}>
+          <Flex
+            alignItems="center"
+            padding="8px 10px"
+            borderRadius={4}
+            _hover={{ bg: 'gray.200' }}
+            cursor="pointer"
+          >
+            <Icon as={BsChat} mr={2} />
+            <Text fontSize="9pt">{post.numberOfComments}</Text>
+          </Flex>
+          <Flex
+            alignItems="center"
+            padding="8px 10px"
+            borderRadius={4}
+            _hover={{ bg: 'gray.200' }}
+            cursor="pointer"
+          >
+            <Icon as={IoArrowRedoOutline} mr={2} />
+            <Text fontSize="9pt">Share</Text>
+          </Flex>
+          <Flex
+            alignItems="center"
+            padding="8px 10px"
+            borderRadius={4}
+            _hover={{ bg: 'gray.200' }}
+            cursor="pointer"
+          >
+            <Icon as={IoBookmarkOutline} mr={2} />
+            <Text fontSize="9pt">Save</Text>
+          </Flex>
+          {/* delete bottom */}
+          { userIsCreator && (
+            <Flex alignItems='center' padding='8px 10px' borderRadius={4} _hover={{ bg: 'gray.200' }} cursor='pointer' onClick={deletePostHandler}>
+              <Icon as={AiOutlineDelete} mr={2} />
+              <Text fontSize='9pt'>Delete</Text>
+            </Flex>
+          ) }
+        </Flex>
       </Flex>
     </Flex>
   );
