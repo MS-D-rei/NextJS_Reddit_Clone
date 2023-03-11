@@ -51,8 +51,8 @@ export default function Header({ communityData }: HeaderProps) {
   };
 
   return (
-    <Flex direction="column" width="100%" height="10rem">
-      <Box height="50%" bg="blue.500" />
+    <Flex direction="column" width="100%" height="146px">
+      <Box height="50%" bg="blue.400" />
       <Flex justifyContent="center" bg="white" flexGrow={1}>
         <Flex width="95%" maxWidth="860px">
           {communityData.imageURL ? (
@@ -68,17 +68,17 @@ export default function Header({ communityData }: HeaderProps) {
               top={-3}
             />
           )}
-          <Flex direction="column" padding="1rem 1rem">
-            <Text fontWeight="800" fontSize="2xl">
+          <Flex direction="column" padding="10px 16px">
+            <Text fontWeight="800" fontSize="16pt">
               {communityData.id}
             </Text>
-            <Text fontWeight="600" fontSize="sm" color="gray.400">
+            <Text fontWeight="600" fontSize="10pt" color="gray.400">
               r/{communityData.id}
             </Text>
           </Flex>
           <Button
             variant={isJoined ? 'outline' : 'solid'}
-            height="2rem"
+            height="30px"
             mt={4}
             ml={4}
             isLoading={userCommunityState.isLoading}
