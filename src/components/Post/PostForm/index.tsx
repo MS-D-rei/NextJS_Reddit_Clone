@@ -18,6 +18,7 @@ import {
   collection,
   FirestoreError,
   serverTimestamp,
+  Timestamp,
   updateDoc,
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
@@ -118,7 +119,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
       description: postText.description,
       numberOfComments: 0,
       voteStatus: 0,
-      createdAt: serverTimestamp(),
+      createdAt: serverTimestamp() as Timestamp,
     };
 
     try {
@@ -138,6 +139,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
           imageURL: downloadURL,
         });
       }
+      router.back();
     } catch (err) {
       if (err instanceof Error) {
         console.log(`${err.name}: ${err.message}`);
