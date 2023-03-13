@@ -1,12 +1,15 @@
 import { GetServerSidePropsContext } from 'next';
+import { useEffect } from 'react';
 import { doc, getDocFromServer } from 'firebase/firestore';
 import { firestore } from '@/firebase/clientApp';
-import { ICommunity } from '@/store/communitySlice';
+import { useAppDispatch } from '@/store/hooks';
+import { ICommunity, setCurrentCommunity } from '@/store/communitySlice';
 import CommunityNotFound from '@/components/Community/CommunityNotFound';
 import Header from '@/components/Community/Header';
 import PageContentLayout from '@/components/Layout/PageContentLayout';
 import CreatePostLink from '@/components/Community/CreatePostLink';
 import PostList from '@/components/Post/PostList';
+import AboutCommunity from '@/components/Community/AboutCommunity';
 
 interface CommunityPageProps {
   communityData: ICommunity;
@@ -15,9 +18,15 @@ interface CommunityPageProps {
 export default function CommunityPage({ communityData }: CommunityPageProps) {
   // console.log(communityData);
 
+  const dispatch = useAppDispatch();
+
   if (!communityData) {
     return <CommunityNotFound />;
   }
+
+  useEffect(() => {
+    dispatch(setCurrentCommunity(communityData));
+  }, []);
 
   return (
     <>
@@ -27,7 +36,7 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
           <CreatePostLink />
           <PostList communityData={communityData} />
         </>
-        <>right side content</>
+        <><AboutCommunity communityData={communityData} /></>
       </PageContentLayout>
     </>
   );
@@ -46,7 +55,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     // console.log(communityDoc);
 
     if (!communityDoc.exists()) {
-      console.log('communityDoc does not exist')
+      console.log('communityDoc does not exist');
       return {
         props: {
           communityData: '',
@@ -62,13 +71,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     numberOfMembers: 1,
     privacyType: 'public',
     createdAt: { seconds: 1678166418, nanoseconds: 911000000 }} */
-    const communityData: ICommunity = JSON.parse(JSON.stringify({
-      id: communityDocData.id,
-      creatorId: communityDocData.creatorId,
-      numberOfMembers: communityDocData.numberOfMembers,
-      privacyType: communityDocData.privacyType,
-      createdAt: communityDocData.createdAt,
-    }));
+    const communityData: ICommunity = JSON.parse(
+      JSON.stringify({
+        id: communityDocData.id,
+        creatorId: communityDocData.creatorId,
+        numberOfMembers: communityDocData.numberOfMembers,
+        privacyType: communityDocData.privacyType,
+        createdAt: communityDocData.createdAt,
+      })
+    );
 
     // console.log(communityData);
 
