@@ -30,7 +30,7 @@ export default function PostItem({
     new Date(post.createdAt.seconds * 1000)
   );
 
-  console.log(new Date(post.createdAt.seconds * 1000));
+  // console.log(new Date(post.createdAt.seconds * 1000));
 
   const selectPostHandler = () => {
     dispatch(selectPost(post));
