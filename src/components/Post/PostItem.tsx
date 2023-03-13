@@ -1,6 +1,6 @@
 import { useAppDispatch } from '@/store/hooks';
 import { IPost, selectPost } from '@/store/postSlice';
-import { Flex, Icon, Image, Text } from '@chakra-ui/react';
+import { Flex, Icon, Image, Skeleton, Text } from '@chakra-ui/react';
 import {
   IoArrowDownCircleOutline,
   IoArrowDownCircleSharp,
@@ -9,9 +9,10 @@ import {
   IoArrowUpCircleSharp,
   IoBookmarkOutline,
 } from 'react-icons/io5';
-import { AiOutlineDelete } from 'react-icons/ai'
+import { AiOutlineDelete } from 'react-icons/ai';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { BsChat } from 'react-icons/bs';
+import { useState } from 'react';
 
 interface PostItemProps {
   post: IPost;
@@ -24,6 +25,8 @@ export default function PostItem({
   userIsCreator,
   voteValue,
 }: PostItemProps) {
+  const [isLoadingImage, setIsLoadingImage] = useState(true);
+
   const dispatch = useAppDispatch();
 
   const postCreatedTimeDistanceToNow = formatDistanceToNow(
@@ -88,7 +91,7 @@ export default function PostItem({
           </Text>
         </Flex>
         {/* title and description */}
-        <Flex direction='column' ml={3}>
+        <Flex direction="column" ml={3}>
           <Text fontSize="12pt" fontWeight={600}>
             {post.title}
           </Text>
@@ -97,7 +100,16 @@ export default function PostItem({
         {/* post image */}
         {post.imageURL && (
           <Flex justifyContent="center" padding={2}>
-            <Image src={post.imageURL} maxHeight="460px" alt="Post Image" />
+            {isLoadingImage && (
+              <Skeleton height="200px" width="100%" borderRadius={4} />
+            )}
+            <Image
+              src={post.imageURL}
+              maxHeight="460px"
+              alt="Post Image"
+              display={isLoadingImage ? 'none' : 'unset'}
+              onLoad={() => setIsLoadingImage(false)}
+            />
           </Flex>
         )}
         {/* post bottom bar */}
@@ -133,12 +145,19 @@ export default function PostItem({
             <Text fontSize="9pt">Save</Text>
           </Flex>
           {/* delete bottom */}
-          { userIsCreator && (
-            <Flex alignItems='center' padding='8px 10px' borderRadius={4} _hover={{ bg: 'gray.200' }} cursor='pointer' onClick={deletePostHandler}>
+          {userIsCreator && (
+            <Flex
+              alignItems="center"
+              padding="8px 10px"
+              borderRadius={4}
+              _hover={{ bg: 'gray.200' }}
+              cursor="pointer"
+              onClick={deletePostHandler}
+            >
               <Icon as={AiOutlineDelete} mr={2} />
-              <Text fontSize='9pt'>Delete</Text>
+              <Text fontSize="9pt">Delete</Text>
             </Flex>
-          ) }
+          )}
         </Flex>
       </Flex>
     </Flex>
