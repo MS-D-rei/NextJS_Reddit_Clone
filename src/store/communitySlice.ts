@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   collection,
   doc,
@@ -16,7 +16,7 @@ export interface ICommunity {
   creatorId: string;
   numberOfMembers: number;
   privacyType: 'public' | 'restricted' | 'private';
-  createdAt?: Timestamp | FieldValue;
+  createdAt: Timestamp;
   imageURL?: string;
 }
 
@@ -28,6 +28,7 @@ export interface ICommunitySnippet {
 
 interface ICommunityState {
   snippets: ICommunitySnippet[];
+  currentCommunity?: ICommunity;
   isLoading: boolean;
   error: string | null;
 }
@@ -47,6 +48,9 @@ export const communitySlice = createSlice({
       state.isLoading = false;
       state.error = null;
     },
+    setCurrentCommunity: (state, action: PayloadAction<ICommunity>) => {
+      state.currentCommunity = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getAllCommunitySnippets.pending, (state) => {
@@ -102,7 +106,7 @@ export const communitySlice = createSlice({
   },
 });
 
-export const { resetCommunityState } = communitySlice.actions;
+export const { resetCommunityState, setCurrentCommunity } = communitySlice.actions;
 
 export default communitySlice.reducer;
 

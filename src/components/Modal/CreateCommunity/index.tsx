@@ -102,7 +102,7 @@ export default function CreateCommunityModal({
           creatorId: user!.uid,
           numberOfMembers: 1,
           privacyType: communityType,
-          createdAt: serverTimestamp(),
+          createdAt: serverTimestamp() as Timestamp,
         }
 
         // set the new data to the new community document reference
