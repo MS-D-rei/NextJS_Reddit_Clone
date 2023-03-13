@@ -1,6 +1,6 @@
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { deletePost, IPost, selectPost } from '@/store/postSlice';
-import { Flex, Icon, Image, Skeleton, Text } from '@chakra-ui/react';
+import { Flex, Icon, Image, Skeleton, Spinner, Text } from '@chakra-ui/react';
 import {
   IoArrowDownCircleOutline,
   IoArrowDownCircleSharp,
@@ -28,6 +28,7 @@ export default function PostItem({
   const [isLoadingImage, setIsLoadingImage] = useState(true);
 
   const dispatch = useAppDispatch();
+  const postState = useAppSelector((state) => state.post);
 
   const postCreatedTimeDistanceToNow = formatDistanceToNow(
     new Date(post.createdAt.seconds * 1000)
@@ -156,7 +157,13 @@ export default function PostItem({
               cursor="pointer"
               onClick={() => deletePostHandler(post)}
             >
-              <Icon as={AiOutlineDelete} mr={2} />
+              {postState.isLoading ? (
+                <Spinner size='sm' mr={2} />
+              ) : (
+                <>
+                  <Icon as={AiOutlineDelete} mr={2} />
+                </>
+              )}
               <Text fontSize="9pt">Delete</Text>
             </Flex>
           )}
