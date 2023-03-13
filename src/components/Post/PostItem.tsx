@@ -1,5 +1,5 @@
 import { useAppDispatch } from '@/store/hooks';
-import { IPost, selectPost } from '@/store/postSlice';
+import { deletePost, IPost, selectPost } from '@/store/postSlice';
 import { Flex, Icon, Image, Skeleton, Text } from '@chakra-ui/react';
 import {
   IoArrowDownCircleOutline,
@@ -41,7 +41,9 @@ export default function PostItem({
 
   const voteHandler = () => {};
 
-  const deletePostHandler = () => {};
+  const deletePostHandler = (post: IPost) => {
+    dispatch(deletePost({ post }));
+  };
 
   return (
     <Flex
@@ -152,7 +154,7 @@ export default function PostItem({
               borderRadius={4}
               _hover={{ bg: 'gray.200' }}
               cursor="pointer"
-              onClick={deletePostHandler}
+              onClick={() => deletePostHandler(post)}
             >
               <Icon as={AiOutlineDelete} mr={2} />
               <Text fontSize="9pt">Delete</Text>
