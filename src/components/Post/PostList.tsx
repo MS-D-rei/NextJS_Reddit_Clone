@@ -5,7 +5,8 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
 import { getAllPosts } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
-import { Flex } from '@chakra-ui/react';
+import { Box, Flex, Stack } from '@chakra-ui/react';
+import PostLoader from './PostLoader';
 
 interface PostListProps {
   communityData: ICommunity;
@@ -24,14 +25,20 @@ export default function PostList({ communityData }: PostListProps) {
 
   return (
     <>
-      {postState.posts.map((post) => (
-        <PostItem
-          key={post.id}
-          post={post}
-          userIsCreator={user?.uid === communityData.creatorId}
-          voteValue={post.voteStatus}
-        />
-      ))}
+      {postState.isLoading ? (
+        <PostLoader />
+      ) : (
+        <Box>
+          {postState.posts.map((post) => (
+            <PostItem
+              key={post.id}
+              post={post}
+              userIsCreator={user?.uid === communityData.creatorId}
+              voteValue={post.voteStatus}
+            />
+          ))}
+        </Box>
+      )}
     </>
   );
 }
