@@ -73,11 +73,8 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     createdAt: { seconds: 1678166418, nanoseconds: 911000000 }} */
     const communityData: ICommunity = JSON.parse(
       JSON.stringify({
+        ...communityDocData,
         id: communityDocData.id,
-        creatorId: communityDocData.creatorId,
-        numberOfMembers: communityDocData.numberOfMembers,
-        privacyType: communityDocData.privacyType,
-        createdAt: communityDocData.createdAt,
       })
     );
 
