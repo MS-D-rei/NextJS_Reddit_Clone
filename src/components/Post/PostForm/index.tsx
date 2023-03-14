@@ -27,6 +27,7 @@ import TabItem from '@/components/Post/PostForm/TabItem';
 import TextInputs from '@/components/Post/PostForm/TextInputs';
 import ImageUpload from '@/components/Post/PostForm/ImageUpload';
 import { IPost } from '@/store/postSlice';
+import { useSelectFile } from '@/hooks/useSelectFile';
 
 export interface IFormTab {
   title: string;
@@ -53,7 +54,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
     title: '',
     description: '',
   });
-  const [selectedFile, setSelectedFile] = useState<string>();
+  const {selectedFile, setSelectedFile, selectFile} = useSelectFile();
   const [isLoading, setIsLoading] = useState(false);
   const [submitPostError, setSubmitPostError] = useState('');
 
@@ -69,30 +70,7 @@ export default function NewPostForm({ user }: NewPostFormProps) {
   const imageVideoFileChangeHandler = (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-    const reader = new FileReader();
-
-    // console.log(event.target.files);
-    /*
-    FileList {0: File, length: 1}
-    0: File
-    lastModified: 1672657779958
-    lastModifiedDate: Mon Jan 02 2023 20:09:39 GMT+0900 () {}
-    name: "2023-01-02 20.09.34.png"
-    size: 24757
-    type: "image/png"
-    webkitRelativePath: ""
-    [[Prototype]]: File
-    length: 1 */
-
-    if (event.target.files?.[0]) {
-      reader.readAsDataURL(event.target.files[0]);
-    }
-
-    reader.onload = (readerEvent) => {
-      if (readerEvent.target?.result) {
-        setSelectedFile(readerEvent.target.result as string);
-      }
-    };
+    selectFile(event)
   };
 
   const submitHandler = async (event: FormEvent<HTMLFormElement>) => {
