@@ -50,7 +50,12 @@ export const communitySlice = createSlice({
     },
     setCurrentCommunity: (state, action: PayloadAction<ICommunity>) => {
       state.currentCommunity = action.payload;
-    }
+    },
+    updateCurrentCommunityImageURL: (state, action: PayloadAction<string>) => {
+      if (state.currentCommunity !== undefined ) {
+        state.currentCommunity.imageURL = action.payload;
+      }
+    } 
   },
   extraReducers: (builder) => {
     builder.addCase(getAllCommunitySnippets.pending, (state) => {
@@ -106,7 +111,7 @@ export const communitySlice = createSlice({
   },
 });
 
-export const { resetCommunityState, setCurrentCommunity } = communitySlice.actions;
+export const { resetCommunityState, setCurrentCommunity, updateCurrentCommunityImageURL } = communitySlice.actions;
 
 export default communitySlice.reducer;
 
