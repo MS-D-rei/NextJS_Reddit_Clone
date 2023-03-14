@@ -27,9 +27,9 @@ export default function Header({ communityData }: HeaderProps) {
     dispatch(getAllCommunitySnippets({ userId: user.uid }));
   }, [user]);
 
-  const userCommunityState = useAppSelector((state) => state.community);
+  const communityState = useAppSelector((state) => state.community);
 
-  const isJoined = !!userCommunityState.snippets.find(
+  const isJoined = !!communityState.snippets.find(
     (snippet) => snippet.communityId === communityData.id
   );
 
@@ -44,7 +44,9 @@ export default function Header({ communityData }: HeaderProps) {
     }
 
     if (isJoined) {
-      dispatch(leaveCommunity({communityId: communityData.id, userId: user.uid}));
+      dispatch(
+        leaveCommunity({ communityId: communityData.id, userId: user.uid })
+      );
       return;
     }
     dispatch(joinCommunity({ communityData, userId: user.uid }));
@@ -55,8 +57,16 @@ export default function Header({ communityData }: HeaderProps) {
       <Box height="50%" bg="blue.400" />
       <Flex justifyContent="center" bg="white" flexGrow={1}>
         <Flex width="95%" maxWidth="860px">
-          {communityData.imageURL ? (
-            <Image src={communityData.imageURL} />
+          {communityState.currentCommunity?.imageURL ? (
+            <Image
+              src={communityState.currentCommunity.imageURL}
+              boxSize="60px"
+              border="4px solid white"
+              borderRadius="50%"
+              position="relative"
+              top={-3}
+              alt='community-image'
+            />
           ) : (
             <Icon
               as={FaReddit}
@@ -81,12 +91,12 @@ export default function Header({ communityData }: HeaderProps) {
             height="30px"
             mt={4}
             ml={4}
-            isLoading={userCommunityState.isLoading}
+            isLoading={communityState.isLoading}
             onClick={() => communityJoinStateHandler(communityData, isJoined)}
           >
             {isJoined ? 'Joined' : 'Join'}
           </Button>
-          <Text color="red">{userCommunityState.error}</Text>
+          <Text color="red">{communityState.error}</Text>
         </Flex>
       </Flex>
     </Flex>
