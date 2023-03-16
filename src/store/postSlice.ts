@@ -15,7 +15,7 @@ import {
 import { deleteObject, ref } from 'firebase/storage';
 
 export interface IPost {
-  id?: string;
+  id?: string; // firestore auto-generated ID
   communityId: string;
   creatorId: string;
   createDisplayName: string;
@@ -28,17 +28,25 @@ export interface IPost {
   createdAt: Timestamp;
 }
 
+export interface IPostVote {
+  id: string; // firestore auto-generated ID
+  postId: string;
+  communityId: string;
+  voteNumber: number;
+}
+
 interface PostState {
   selectedPost: IPost | null;
   posts: IPost[];
   error: string | null;
   isLoading: boolean;
-  // postVotes
+  postVotes: IPostVote[];
 }
 
 const initialState: PostState = {
   selectedPost: null,
   posts: [],
+  postVotes: [],
   error: null,
   isLoading: false,
 };
@@ -50,6 +58,12 @@ export const postSlice = createSlice({
     selectPost: (state, action: PayloadAction<IPost>) => {
       state.selectedPost = action.payload;
     },
+    setPosts: (state, action: PayloadAction<IPost[]>) => {
+      state.posts = action.payload;
+    },
+    setPostVotes: (state, action: PayloadAction<IPostVote[]>) => {
+      state.postVotes = action.payload
+    }
   },
   extraReducers: (builder) => {
     builder.addCase(getAllPosts.pending, (state) => {
@@ -87,7 +101,7 @@ export const postSlice = createSlice({
   },
 });
 
-export const { selectPost } = postSlice.actions;
+export const { selectPost, setPosts, setPostVotes } = postSlice.actions;
 
 export default postSlice.reducer;
 
