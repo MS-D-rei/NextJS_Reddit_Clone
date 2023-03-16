@@ -1,5 +1,5 @@
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { deletePost, IPost, selectPost } from '@/store/postSlice';
+import { useState } from 'react';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { Flex, Icon, Image, Skeleton, Spinner, Text } from '@chakra-ui/react';
 import {
   IoArrowDownCircleOutline,
@@ -9,10 +9,21 @@ import {
   IoArrowUpCircleSharp,
   IoBookmarkOutline,
 } from 'react-icons/io5';
-import { AiOutlineDelete } from 'react-icons/ai';
-import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { BsChat } from 'react-icons/bs';
-import { useState } from 'react';
+import { AiOutlineDelete } from 'react-icons/ai';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, firestore } from '@/firebase/clientApp';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  deletePost,
+  IPost,
+  IPostVote,
+  selectPost,
+  setPosts,
+  setPostVotes,
+} from '@/store/postSlice';
+import { openModal } from '@/store/authModalSlice';
+import { collection, doc, updateDoc, writeBatch } from 'firebase/firestore';
 
 interface PostItemProps {
   post: IPost;
@@ -25,10 +36,15 @@ export default function PostItem({
   userIsCreator,
   voteValue,
 }: PostItemProps) {
+  console.log(`${post.id} rendered`);
+
   const [isLoadingImage, setIsLoadingImage] = useState(true);
 
   const dispatch = useAppDispatch();
   const postState = useAppSelector((state) => state.post);
+  const communityState = useAppSelector((state) => state.community);
+
+  const [user] = useAuthState(auth);
 
   const postCreatedTimeDistanceToNow = formatDistanceToNow(
     new Date(post.createdAt.seconds * 1000)
@@ -40,7 +56,120 @@ export default function PostItem({
     dispatch(selectPost(post));
   };
 
-  const voteHandler = () => {};
+  const voteHandler = async (voteType: number) => {
+    console.log(`voted at ${post.id}`);
+
+    // if not logged in, open auth modal.
+    if (!user) {
+      dispatch(openModal('login'));
+      return;
+    }
+
+    try {
+      // specify user's postVote for the current post
+      const existingPostVote = postState.postVotes.find(
+        (postVote) => postVote.postId === post.id
+      );
+
+      // 3 factors to update in this function
+      let newTotalVoteStatus = post.voteStatus;
+      let newPostVotes = [...postState.postVotes];
+      let newPosts = [...postState.posts];
+
+      // batch writing
+      const batch = writeBatch(firestore);
+
+      // when has not voted yet
+      if (!existingPostVote) {
+        // create new postVote document to postVotes which is user's subcollection.
+        // get postVote document reference with auto-generated ID
+        const postVoteDocRef = doc(
+          collection(firestore, 'users', `${user.uid}/postVotes`)
+        );
+
+        const newPostVote: IPostVote = {
+          id: postVoteDocRef.id,
+          postId: post.id!,
+          communityId: communityState.currentCommunity?.id!,
+          voteNumber: voteType,
+        };
+
+        batch.set(postVoteDocRef, newPostVote);
+
+        // add/subtract newTotalVoteStatus
+        newTotalVoteStatus += voteType;
+        // add the new postVote to postState.postVotes
+        newPostVotes = [...postState.postVotes, newPostVote];
+      } else {
+        // when has voted already
+        // in case of click same vote type
+        if (existingPostVote.voteNumber === voteType) {
+          // delete postVote document
+          const postVoteDocRef = doc(
+            firestore,
+            'users',
+            `${user.uid}/postVotes/${existingPostVote.id}`
+          );
+          batch.delete(postVoteDocRef);
+
+          // add/subtract newTotalVoteStatus
+          newTotalVoteStatus -= voteType;
+          // remove the postVote from postState.postVotes
+          newPostVotes = newPostVotes.filter(
+            (postVote) => postVote.postId !== post.id
+          );
+        }
+
+        // in case of clicking opposite vote type
+        if (existingPostVote.voteNumber === -voteType) {
+          // update current postVote voteNumber field
+          const postVoteDocRef = doc(
+            firestore,
+            'users',
+            `${user.uid}/postVotes/${existingPostVote.id}`
+          );
+          batch.update(postVoteDocRef, {
+            voteNumber: voteType,
+          });
+
+          // add/subtract newTotalVoteStatus
+          newTotalVoteStatus += voteType * 2;
+          // update the exisingPostVote voteNumber
+          const postVoteIndex = newPostVotes.findIndex(
+            (postVote) => postVote.id === existingPostVote.id
+          );
+          newPostVotes[postVoteIndex] = {
+            ...existingPostVote,
+            voteNumber: -voteType,
+          };
+        }
+      }
+
+      // update post's voteStatus
+      const postDocRef = doc(firestore, 'posts', post.id!);
+      batch.update(postDocRef, {
+        voteStatus: newTotalVoteStatus,
+      });
+
+      await batch.commit();
+
+      // update postState.posts and postState.postVotes both
+      // update postState.postVotes
+      dispatch(setPostVotes(newPostVotes));
+
+      // update postState.posts[curernt post] voteStatus
+      const postIndex = newPosts.findIndex((item) => item.id === post.id);
+      newPosts[postIndex] = {
+        ...newPosts[postIndex],
+        voteStatus: newTotalVoteStatus,
+      };
+      dispatch(setPosts(newPosts));
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`${err.name}: ${err.message}`);
+      }
+    }
+  };
 
   const deletePostHandler = (post: IPost) => {
     dispatch(deletePost({ post }));
@@ -71,15 +200,15 @@ export default function PostItem({
           color={voteValue === 1 ? 'brand.100' : 'gray.400'}
           fontSize={22}
           cursor="pointer"
-          onClick={voteHandler}
+          onClick={() => voteHandler(1)}
         />
         <Text fontWeight={500}>{post.voteStatus}</Text>
         <Icon
           as={true ? IoArrowDownCircleSharp : IoArrowDownCircleOutline}
-          color={voteValue === 1 ? '#4379ff' : 'gray.400'}
+          color={voteValue === -1 ? '#4379ff' : 'gray.400'}
           fontSize={22}
           cursor="pointer"
-          onClick={voteHandler}
+          onClick={() => voteHandler(-1)}
         />
       </Flex>
       {/* post content */}
@@ -158,7 +287,7 @@ export default function PostItem({
               onClick={() => deletePostHandler(post)}
             >
               {postState.isLoading ? (
-                <Spinner size='sm' mr={2} />
+                <Spinner size="sm" mr={2} />
               ) : (
                 <>
                   <Icon as={AiOutlineDelete} mr={2} />

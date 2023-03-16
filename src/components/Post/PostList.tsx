@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
 import { getAllPosts } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
-import { Box, Flex, Stack } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import PostLoader from './PostLoader';
 
 interface PostListProps {
@@ -13,6 +13,8 @@ interface PostListProps {
 }
 
 export default function PostList({ communityData }: PostListProps) {
+  console.log('PostList rendered');
+
   const dispatch = useAppDispatch();
 
   const postState = useAppSelector((state) => state.post);
