@@ -1,29 +1,45 @@
-import { useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/firebase/clientApp';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
-import { getAllPosts } from '@/store/postSlice';
+import { getAllPosts, IPost, voteToPost } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
 import { Box } from '@chakra-ui/react';
 import PostLoader from './PostLoader';
+import { openModal } from '@/store/authModalSlice';
 
 interface PostListProps {
   communityData: ICommunity;
 }
 
-export default function PostList({ communityData }: PostListProps) {
+const PostList = ({ communityData }: PostListProps) => {
   console.log('PostList rendered');
 
   const dispatch = useAppDispatch();
 
+  
   const postState = useAppSelector((state) => state.post);
-
-  const [user] = useAuthState(auth);
-
+  
   useEffect(() => {
     dispatch(getAllPosts({ communityId: communityData.id }));
   }, []);
+  
+  const [user] = useAuthState(auth);
+
+
+  const onVote = (post: IPost, voteType: number) => {
+    if (!user) {
+      dispatch(openModal('login'));
+      return;
+    }
+
+    console.log(`voted to ${post.title}`);
+
+    dispatch(
+      voteToPost({ userUid: user.uid, postState, post, communityId: communityData.id, voteType })
+    );
+  };
 
   return (
     <>
@@ -36,11 +52,18 @@ export default function PostList({ communityData }: PostListProps) {
               key={post.id}
               post={post}
               userIsCreator={user?.uid === communityData.creatorId}
-              voteValue={post.voteStatus}
+              userVoteNumber={
+                postState.postVotes.find(
+                  (postVote) => postVote.postId === post.id
+                )?.voteNumber
+              }
+              onVote={onVote}
             />
           ))}
         </Box>
       )}
     </>
   );
-}
+};
+
+export default PostList;
