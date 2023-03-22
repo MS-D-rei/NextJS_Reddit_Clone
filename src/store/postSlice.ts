@@ -1,4 +1,4 @@
-import { auth, firestore, storage } from '@/firebase/clientApp';
+import { firestore, storage } from '@/firebase/clientApp';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   collection,
@@ -14,9 +14,6 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useAppSelector } from '@/store/hooks';
-import { User } from 'firebase/auth';
 
 export interface IPost {
   id?: string; // firestore auto-generated ID
@@ -103,16 +100,13 @@ export const postSlice = createSlice({
         }
       });
     builder.addCase(voteToPost.pending, (state) => {
-      // state.isLoading = true;
       state.error = null;
     }),
       builder.addCase(voteToPost.fulfilled, (state, action) => {
-        state.isLoading = false;
         state.posts = action.payload.posts;
         state.postVotes = action.payload.postVotes;
       }),
       builder.addCase(voteToPost.rejected, (state, action) => {
-        state.isLoading = false;
         if (action.payload) {
           state.error = action.payload;
         } else {
@@ -185,21 +179,21 @@ export const deletePost = createAsyncThunk<
 
 export const voteToPost = createAsyncThunk<
   { posts: IPost[]; postVotes: IPostVote[] },
-  { userUid: string, postState: PostState, post: IPost; communityId: string; voteType: number },
+  { userUid: string, post: IPost; communityId: string; voteType: number, reduxPostVotes: IPostVote[], reduxPosts: IPost[]},
   { rejectValue: string; serializedErrorType: string }
->('post/voteToPost', async ({ userUid, postState, post, communityId, voteType }, thunkAPI) => {
+>('post/voteToPost', async ({ userUid, post, communityId, voteType, reduxPosts, reduxPostVotes }, thunkAPI) => {
   // const [user] = useAuthState(auth);
   // const postState = useAppSelector((state) => state.post);
 
   try {
-    const existingPostVote = postState.postVotes.find(
+    const existingPostVote = reduxPostVotes.find(
       (postVote) => postVote.postId === post.id
     );
 
     // 3 factors to update in this function
     let newTotalVoteStatus = post.voteStatus;
-    let newPostVotes = [...postState.postVotes];
-    let newPosts = [...postState.posts];
+    let newPostVotes = [...reduxPostVotes];
+    let newPosts = [...reduxPosts];
 
     const batch = writeBatch(firestore);
 
@@ -220,7 +214,7 @@ export const voteToPost = createAsyncThunk<
       // add/subtract newTotalVoteStatus
       newTotalVoteStatus += voteType;
       // add the new postVote to postState.postVotes
-      newPostVotes = [...postState.postVotes, newPostVote];
+      newPostVotes = [...reduxPostVotes, newPostVote];
     } else {
       // when has voted already
 
