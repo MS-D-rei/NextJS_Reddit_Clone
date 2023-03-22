@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { Flex, Icon, Image, Skeleton, Spinner, Text } from '@chakra-ui/react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 import {
   IoArrowDownCircleOutline,
   IoArrowDownCircleSharp,
@@ -11,36 +12,39 @@ import {
 } from 'react-icons/io5';
 import { BsChat } from 'react-icons/bs';
 import { AiOutlineDelete } from 'react-icons/ai';
+import { auth } from '@/firebase/clientApp';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import {
-  deletePost,
-  IPost,
-  selectPost,
-} from '@/store/postSlice';
+import { deletePost, IPost, selectPost, voteToPost } from '@/store/postSlice';
+import { openModal } from '@/store/authModalSlice';
 
 interface PostItemProps {
   post: IPost;
-  userIsCreator: boolean;
-  userVoteNumber?: number;
-  onVote: (post: IPost, voteType: number) => void
+  communityId: string;
+  creatorId: string;
 }
 
 export default function PostItem({
   post,
-  userIsCreator,
-  userVoteNumber,
-  onVote,
+  communityId,
+  creatorId,
 }: PostItemProps) {
   console.log(`${post.title} rendered`);
 
   const [isLoadingImage, setIsLoadingImage] = useState(true);
 
   const dispatch = useAppDispatch();
-  const postState = useAppSelector((state) => state.post);
+  const reduxPostPosts = useAppSelector((state) => state.post.posts);
+  const reduxPostPostVotes = useAppSelector((state) => state.post.postVotes);
+  const reduxPostIsLoading = useAppSelector((state) => state.post.isLoading);
 
   const postCreatedTimeDistanceToNow = formatDistanceToNow(
     new Date(post.createdAt.seconds * 1000)
   );
+
+  const [user] = useAuthState(auth);
+
+  const userIsCreator = user?.uid === creatorId;
+  const userVoteNumber = reduxPostPostVotes.find((postVote) => postVote.postId === post.id)?.voteNumber; 
 
   // console.log(new Date(post.createdAt.seconds * 1000));
 
@@ -48,134 +52,137 @@ export default function PostItem({
     dispatch(selectPost(post));
   };
 
-  // const voteHandler = async (voteType: number) => {
-  //   console.log(`voted at ${post.id}`);
+  const voteHandler = async (voteType: number) => {
+    console.log(`voted at ${post.id}`);
 
-  //   // if not logged in, open auth modal.
-  //   if (!user) {
-  //     dispatch(openModal('login'));
-  //     return;
-  //   }
+    // if not logged in, open auth modal.
+    if (!user) {
+      dispatch(openModal('login'));
+      return;
+    }
 
-  //   dispatch(
-  //     voteToPost({
-  //       user: user,
-  //       postState: postState,
-  //       post: post,
-  //       communityId: communityState.currentCommunity!.id,
-  //       voteType: voteType,
-  //     })
+    dispatch(
+      voteToPost({
+        userUid: user.uid,
+        post,
+        communityId,
+        voteType: voteType,
+        reduxPosts: reduxPostPosts,
+        reduxPostVotes: reduxPostPostVotes,
+      })
+    );
+  };
+
+  // this try catch function move to postSlice.ts
+  // try {
+  //   // specify user's postVote for the current post
+  //   const existingPostVote = postState.postVotes.find(
+  //     (postVote) => postVote.postId === post.id
   //   );
 
-    // try {
-    //   // specify user's postVote for the current post
-    //   const existingPostVote = postState.postVotes.find(
-    //     (postVote) => postVote.postId === post.id
-    //   );
+  //   // 3 factors to update in this function
+  //   let newTotalVoteStatus = post.voteStatus;
+  //   let newPostVotes = [...postState.postVotes];
+  //   let newPosts = [...postState.posts];
 
-    //   // 3 factors to update in this function
-    //   let newTotalVoteStatus = post.voteStatus;
-    //   let newPostVotes = [...postState.postVotes];
-    //   let newPosts = [...postState.posts];
+  //   // batch writing
+  //   const batch = writeBatch(firestore);
 
-    //   // batch writing
-    //   const batch = writeBatch(firestore);
+  //   // when has not voted yet
+  //   if (!existingPostVote) {
+  //     // create new postVote document to postVotes which is user's subcollection.
+  //     // get postVote document reference with auto-generated ID
+  //     const postVoteDocRef = doc(
+  //       collection(firestore, 'users', `${user.uid}/postVotes`)
+  //     );
 
-    //   // when has not voted yet
-    //   if (!existingPostVote) {
-    //     // create new postVote document to postVotes which is user's subcollection.
-    //     // get postVote document reference with auto-generated ID
-    //     const postVoteDocRef = doc(
-    //       collection(firestore, 'users', `${user.uid}/postVotes`)
-    //     );
+  //     const newPostVote: IPostVote = {
+  //       id: postVoteDocRef.id,
+  //       postId: post.id!,
+  //       communityId: communityState.currentCommunity?.id!,
+  //       voteNumber: voteType,
+  //     };
 
-    //     const newPostVote: IPostVote = {
-    //       id: postVoteDocRef.id,
-    //       postId: post.id!,
-    //       communityId: communityState.currentCommunity?.id!,
-    //       voteNumber: voteType,
-    //     };
+  //     batch.set(postVoteDocRef, newPostVote);
 
-    //     batch.set(postVoteDocRef, newPostVote);
+  //     // add/subtract newTotalVoteStatus
+  //     newTotalVoteStatus += voteType;
+  //     // add the new postVote to postState.postVotes
+  //     newPostVotes = [...postState.postVotes, newPostVote];
+  //   } else {
+  //     // when has voted already
+  //     // in case of click same vote type
+  //     if (existingPostVote.voteNumber === voteType) {
+  //       // delete postVote document
+  //       const postVoteDocRef = doc(
+  //         firestore,
+  //         'users',
+  //         `${user.uid}/postVotes/${existingPostVote.id}`
+  //       );
+  //       batch.delete(postVoteDocRef);
 
-    //     // add/subtract newTotalVoteStatus
-    //     newTotalVoteStatus += voteType;
-    //     // add the new postVote to postState.postVotes
-    //     newPostVotes = [...postState.postVotes, newPostVote];
-    //   } else {
-    //     // when has voted already
-    //     // in case of click same vote type
-    //     if (existingPostVote.voteNumber === voteType) {
-    //       // delete postVote document
-    //       const postVoteDocRef = doc(
-    //         firestore,
-    //         'users',
-    //         `${user.uid}/postVotes/${existingPostVote.id}`
-    //       );
-    //       batch.delete(postVoteDocRef);
+  //       // add/subtract newTotalVoteStatus
+  //       newTotalVoteStatus -= voteType;
+  //       // remove the postVote from postState.postVotes
+  //       newPostVotes = newPostVotes.filter(
+  //         (postVote) => postVote.postId !== post.id
+  //       );
+  //     }
 
-    //       // add/subtract newTotalVoteStatus
-    //       newTotalVoteStatus -= voteType;
-    //       // remove the postVote from postState.postVotes
-    //       newPostVotes = newPostVotes.filter(
-    //         (postVote) => postVote.postId !== post.id
-    //       );
-    //     }
+  //     // in case of clicking opposite vote type
+  //     if (existingPostVote.voteNumber === -voteType) {
+  //       // update current postVote voteNumber field
+  //       const postVoteDocRef = doc(
+  //         firestore,
+  //         'users',
+  //         `${user.uid}/postVotes/${existingPostVote.id}`
+  //       );
+  //       batch.update(postVoteDocRef, {
+  //         voteNumber: voteType,
+  //       });
 
-    //     // in case of clicking opposite vote type
-    //     if (existingPostVote.voteNumber === -voteType) {
-    //       // update current postVote voteNumber field
-    //       const postVoteDocRef = doc(
-    //         firestore,
-    //         'users',
-    //         `${user.uid}/postVotes/${existingPostVote.id}`
-    //       );
-    //       batch.update(postVoteDocRef, {
-    //         voteNumber: voteType,
-    //       });
+  //       // add/subtract newTotalVoteStatus
+  //       newTotalVoteStatus += voteType * 2;
+  //       // update the exisingPostVote voteNumber
+  //       const postVoteIndex = newPostVotes.findIndex(
+  //         (postVote) => postVote.id === existingPostVote.id
+  //       );
+  //       newPostVotes[postVoteIndex] = {
+  //         ...existingPostVote,
+  //         voteNumber: voteType,
+  //       };
+  //     }
+  //   }
 
-    //       // add/subtract newTotalVoteStatus
-    //       newTotalVoteStatus += voteType * 2;
-    //       // update the exisingPostVote voteNumber
-    //       const postVoteIndex = newPostVotes.findIndex(
-    //         (postVote) => postVote.id === existingPostVote.id
-    //       );
-    //       newPostVotes[postVoteIndex] = {
-    //         ...existingPostVote,
-    //         voteNumber: voteType,
-    //       };
-    //     }
-    //   }
+  // // update post's voteStatus
+  // const postDocRef = doc(firestore, 'posts', post.id!);
+  // batch.update(postDocRef, {
+  //   voteStatus: newTotalVoteStatus,
+  // });
 
-      // // update post's voteStatus
-      // const postDocRef = doc(firestore, 'posts', post.id!);
-      // batch.update(postDocRef, {
-      //   voteStatus: newTotalVoteStatus,
-      // });
+  //   await batch.commit();
 
-    //   await batch.commit();
+  //   // update postState.posts and postState.postVotes both
+  //   // update postState.postVotes
+  //   dispatch(setPostVotes(newPostVotes));
 
-    //   // update postState.posts and postState.postVotes both
-    //   // update postState.postVotes
-    //   dispatch(setPostVotes(newPostVotes));
-
-    //   // update postState.posts[curernt post] voteStatus
-    //   const postIndex = newPosts.findIndex((item) => item.id === post.id);
-    //   newPosts[postIndex] = {
-    //     ...newPosts[postIndex],
-    //     voteStatus: newTotalVoteStatus,
-    //   };
-    //   dispatch(setPosts(newPosts));
-    // } catch (err) {
-    //   if (err instanceof Error) {
-    //     console.log(`${err.name}: ${err.message}`);
-    //   }
-    // }
+  //   // update postState.posts[curernt post] voteStatus
+  //   const postIndex = newPosts.findIndex((item) => item.id === post.id);
+  //   newPosts[postIndex] = {
+  //     ...newPosts[postIndex],
+  //     voteStatus: newTotalVoteStatus,
+  //   };
+  //   dispatch(setPosts(newPosts));
+  // } catch (err) {
+  //   if (err instanceof Error) {
+  //     console.log(`${err.name}: ${err.message}`);
+  //   }
+  // }
   // };
 
-  const voteHandler = (voteType: number) => {
-    onVote(post, voteType);
-  }
+  // const voteHandler = (voteType: number) => {
+  //   onVote(post, voteType);
+  // }
 
   const deletePostHandler = (post: IPost) => {
     dispatch(deletePost({ post }));
@@ -202,7 +209,9 @@ export default function PostItem({
         borderRadius={4}
       >
         <Icon
-          as={userVoteNumber   === 1 ? IoArrowUpCircleSharp : IoArrowUpCircleOutline}
+          as={
+            userVoteNumber === 1 ? IoArrowUpCircleSharp : IoArrowUpCircleOutline
+          }
           color={userVoteNumber === 1 ? 'brand.100' : 'gray.400'}
           fontSize={22}
           cursor="pointer"
@@ -292,7 +301,7 @@ export default function PostItem({
               cursor="pointer"
               onClick={() => deletePostHandler(post)}
             >
-              {postState.isLoading ? (
+              {reduxPostIsLoading ? (
                 <Spinner size="sm" mr={2} />
               ) : (
                 <>
