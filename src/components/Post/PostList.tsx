@@ -1,63 +1,58 @@
-import { memo, useCallback, useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/firebase/clientApp';
+import { useEffect } from 'react';
+import { Box } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
-import { getAllPosts, IPost, voteToPost } from '@/store/postSlice';
+import { getAllPosts } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
-import { Box } from '@chakra-ui/react';
-import PostLoader from './PostLoader';
-import { openModal } from '@/store/authModalSlice';
+import PostLoader from '@/components/Post/PostLoader';
 
 interface PostListProps {
   communityData: ICommunity;
 }
 
 const PostList = ({ communityData }: PostListProps) => {
-  console.log('PostList rendered');
+  // console.log('PostList rendered');
 
   const dispatch = useAppDispatch();
 
-  
-  const postState = useAppSelector((state) => state.post);
-  
+  const reduxPostPosts = useAppSelector((state) => state.post.posts);
+  const reduxPostIsLoading = useAppSelector((state) => state.post.isLoading);
+
   useEffect(() => {
     dispatch(getAllPosts({ communityId: communityData.id }));
-  }, []);
-  
-  const [user] = useAuthState(auth);
+  }, [dispatch]);
 
+  // const onVote = (post: IPost, voteType: number) => {
+  //   if (!user) {
+  //     dispatch(openModal('login'));
+  //     return;
+  //   }
 
-  const onVote = (post: IPost, voteType: number) => {
-    if (!user) {
-      dispatch(openModal('login'));
-      return;
-    }
+  //   console.log(`voted to ${post.title}`);
 
-    console.log(`voted to ${post.title}`);
-
-    dispatch(
-      voteToPost({ userUid: user.uid, postState, post, communityId: communityData.id, voteType })
-    );
-  };
+  //   dispatch(
+  //     voteToPost({
+  //       userUid: user.uid,
+  //       postState,
+  //       post,
+  //       communityId: communityData.id,
+  //       voteType,
+  //     })
+  //   );
+  // };
 
   return (
     <>
-      {postState.isLoading ? (
+      {reduxPostIsLoading ? (
         <PostLoader />
       ) : (
         <Box>
-          {postState.posts.map((post) => (
+          {reduxPostPosts.map((post) => (
             <PostItem
               key={post.id}
               post={post}
-              userIsCreator={user?.uid === communityData.creatorId}
-              userVoteNumber={
-                postState.postVotes.find(
-                  (postVote) => postVote.postId === post.id
-                )?.voteNumber
-              }
-              onVote={onVote}
+              communityId={communityData.id}
+              creatorId={communityData.creatorId}
             />
           ))}
         </Box>
