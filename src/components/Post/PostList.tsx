@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import { Box } from '@chakra-ui/react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/firebase/clientApp';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
-import { getAllPosts, getPostVotes } from '@/store/postSlice';
+import { getAllPosts, getPostVotes, setPostVotes } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
 import PostLoader from '@/components/Post/PostLoader';
-import { auth } from '@/firebase/clientApp';
 
 interface PostListProps {
   communityData: ICommunity;
@@ -19,7 +20,8 @@ const PostList = ({ communityData }: PostListProps) => {
   const reduxPostPosts = useAppSelector((state) => state.post.posts);
   const reduxPostIsLoading = useAppSelector((state) => state.post.isLoading);
 
-  const user = auth.currentUser;
+  // const user = auth.currentUser;
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     // console.log('dispatch getAllPosts');
@@ -31,6 +33,12 @@ const PostList = ({ communityData }: PostListProps) => {
     // console.log('dispatch getPostVotes');
     dispatch(getPostVotes({ userUid: user.uid, communityId: communityData.id }))
   }, [user, communityData.id]);
+
+  useEffect(() => {
+    if (!user) {
+      dispatch(setPostVotes([]));
+    }
+  }, [user])
 
   // const onVote = (post: IPost, voteType: number) => {
   //   if (!user) {
