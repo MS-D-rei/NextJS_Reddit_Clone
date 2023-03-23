@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import { Box } from '@chakra-ui/react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { ICommunity } from '@/store/communitySlice';
-import { getAllPosts } from '@/store/postSlice';
+import { getAllPosts, getPostVotes } from '@/store/postSlice';
 import PostItem from '@/components/Post/PostItem';
 import PostLoader from '@/components/Post/PostLoader';
+import { auth } from '@/firebase/clientApp';
 
 interface PostListProps {
   communityData: ICommunity;
@@ -18,9 +19,18 @@ const PostList = ({ communityData }: PostListProps) => {
   const reduxPostPosts = useAppSelector((state) => state.post.posts);
   const reduxPostIsLoading = useAppSelector((state) => state.post.isLoading);
 
+  const user = auth.currentUser;
+
   useEffect(() => {
+    // console.log('dispatch getAllPosts');
     dispatch(getAllPosts({ communityId: communityData.id }));
-  }, [dispatch]);
+  }, [communityData.id])
+
+  useEffect(() => {
+    if (!user) return;
+    // console.log('dispatch getPostVotes');
+    dispatch(getPostVotes({ userUid: user.uid, communityId: communityData.id }))
+  }, [user, communityData.id]);
 
   // const onVote = (post: IPost, voteType: number) => {
   //   if (!user) {
@@ -50,6 +60,7 @@ const PostList = ({ communityData }: PostListProps) => {
           {reduxPostPosts.map((post) => (
             <PostItem
               key={post.id}
+              user={user}
               post={post}
               communityId={communityData.id}
               creatorId={communityData.creatorId}
@@ -59,6 +70,7 @@ const PostList = ({ communityData }: PostListProps) => {
       )}
     </>
   );
+
 };
 
 export default PostList;

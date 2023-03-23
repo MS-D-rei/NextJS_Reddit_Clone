@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
 import { Flex, Icon, Image, Skeleton, Spinner, Text } from '@chakra-ui/react';
-import { useAuthState } from 'react-firebase-hooks/auth';
 import {
   IoArrowDownCircleOutline,
   IoArrowDownCircleSharp,
@@ -12,23 +11,25 @@ import {
 } from 'react-icons/io5';
 import { BsChat } from 'react-icons/bs';
 import { AiOutlineDelete } from 'react-icons/ai';
-import { auth } from '@/firebase/clientApp';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { deletePost, IPost, selectPost, voteToPost } from '@/store/postSlice';
 import { openModal } from '@/store/authModalSlice';
+import { User } from 'firebase/auth';
 
 interface PostItemProps {
+  user?: User | null;
   post: IPost;
   communityId: string;
   creatorId: string;
 }
 
 export default function PostItem({
+  user,
   post,
   communityId,
   creatorId,
 }: PostItemProps) {
-  console.log(`${post.title} rendered`);
+  // console.log(`${post.title} rendered`);
 
   const [isLoadingImage, setIsLoadingImage] = useState(true);
 
@@ -41,7 +42,7 @@ export default function PostItem({
     new Date(post.createdAt.seconds * 1000)
   );
 
-  const [user] = useAuthState(auth);
+  // const [user] = useAuthState(auth);
 
   const userIsCreator = user?.uid === creatorId;
   const userVoteNumber = reduxPostPostVotes.find((postVote) => postVote.postId === post.id)?.voteNumber; 
