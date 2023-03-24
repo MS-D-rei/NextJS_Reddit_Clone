@@ -1,13 +1,13 @@
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { deletePost, IPost, selectPost } from '@/store/postSlice';
-import { Flex, Skeleton, Text, Image, Icon, Spinner } from '@chakra-ui/react';
-import { formatDistanceToNow } from 'date-fns';
-import { User } from 'firebase/auth';
-import { useRouter } from 'next/router';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { User } from 'firebase/auth';
 import { AiOutlineDelete } from 'react-icons/ai';
 import { BsChat } from 'react-icons/bs';
 import { IoArrowRedoOutline, IoBookmarkOutline } from 'react-icons/io5';
+import { formatDistanceToNow } from 'date-fns';
+import { Flex, Skeleton, Text, Image, Icon, Spinner } from '@chakra-ui/react';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { deletePost, IPost, selectPost } from '@/store/postSlice';
 
 interface PostContentProps {
   post: IPost;

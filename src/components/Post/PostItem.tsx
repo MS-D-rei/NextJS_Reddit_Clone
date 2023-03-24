@@ -43,7 +43,7 @@ export default function PostItem({
       mb={4}
     >
       {/* gray vote bar */}
-      <PostVoteBar post={post} user={user} communityId={communityId} />
+      <PostVoteBar post={post} user={user} communityId={communityId} isSingle={false} />
       {/* post content */}
       <PostContent post={post} user={user} communityId={communityId} creatorId={creatorId} />
     </Flex>

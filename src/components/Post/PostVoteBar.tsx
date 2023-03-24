@@ -1,28 +1,28 @@
-import { auth } from '@/firebase/clientApp';
-import { openModal } from '@/store/authModalSlice';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { getAllPosts, IPost, voteToPost } from '@/store/postSlice';
+import { useEffect } from 'react';
 import { Flex, Icon, Text } from '@chakra-ui/react';
 import { User } from 'firebase/auth';
-import { useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
 import {
   IoArrowDownCircleOutline,
   IoArrowDownCircleSharp,
   IoArrowUpCircleOutline,
   IoArrowUpCircleSharp,
 } from 'react-icons/io5';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { openModal } from '@/store/authModalSlice';
+import { getAllPosts, IPost, voteToPost } from '@/store/postSlice';
 
 interface PostVoteBarProps {
   post: IPost;
   user?: User | null;
   communityId: string;
+  isSingle: boolean;
 }
 
 export default function PostVoteBar({
   post,
   user,
   communityId,
+  isSingle,
 }: PostVoteBarProps) {
   // console.log(`${post.title} votebar rendered`);
 
@@ -67,10 +67,10 @@ export default function PostVoteBar({
     <Flex
       direction="column"
       alignItems="center"
-      bg="gray.100"
+      bg={isSingle ? 'none' : 'gray.100'}
       padding={2}
       width="40px"
-      borderRadius={4}
+      borderRadius={isSingle ? '0' : '4px 0px 0px 4px'}
     >
       <Icon
         as={
