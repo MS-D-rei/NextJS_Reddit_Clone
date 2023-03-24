@@ -103,6 +103,7 @@ export const postSlice = createSlice({
       state.error = null;
     }),
       builder.addCase(voteToPost.fulfilled, (state, action) => {
+        state.selectedPost = action.payload.selectedPost;
         state.posts = action.payload.posts;
         state.postVotes = action.payload.postVotes;
       }),
@@ -188,7 +189,7 @@ export const deletePost = createAsyncThunk<
 });
 
 export const voteToPost = createAsyncThunk<
-  { posts: IPost[]; postVotes: IPostVote[] },
+  { selectedPost: IPost, posts: IPost[]; postVotes: IPostVote[] },
   {
     userUid: string;
     post: IPost;
@@ -293,11 +294,10 @@ export const voteToPost = createAsyncThunk<
 
       // return newPosts and newPostVotes to update postState
       const postIndex = newPosts.findIndex((item) => item.id === post.id);
-      newPosts[postIndex] = {
-        ...newPosts[postIndex],
-        voteStatus: newTotalVoteStatus,
-      };
+      const selectedPost: IPost = { ...newPosts[postIndex], voteStatus: newTotalVoteStatus };
+      newPosts[postIndex] = selectedPost;
       return {
+        selectedPost,
         posts: newPosts,
         postVotes: newPostVotes,
       };
