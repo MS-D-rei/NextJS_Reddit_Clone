@@ -8,7 +8,14 @@ import PostVoteBar from '@/components/Post/PostVoteBar';
 import PostSingleContent from '@/components/Post/PostSingleContent';
 import PostLoader from '@/components/Post/PostLoader';
 import { useEffect } from 'react';
-import { getAllPosts, getPost, getPostVotes, setPostVotes } from '@/store/postSlice';
+import {
+  getAllPosts,
+  getPost,
+  getPostVotes,
+  setPostVotes,
+} from '@/store/postSlice';
+import { getCommunityData } from '@/store/communitySlice';
+import AboutCommunity from '@/components/Community/AboutCommunity';
 
 export default function PostPage() {
   const router = useRouter();
@@ -24,10 +31,14 @@ export default function PostPage() {
     (state) => state.post.selectedPost?.creatorId
   );
 
+  const communityData = useAppSelector(
+    (state) => state.community.currentCommunity
+  );
+
   useEffect(() => {
     const postId = router.query.postId as string;
 
-    if (postId && !selectedPost) {
+    if (postId && !selectedPost?.id) {
       dispatch(getPost({ postId }));
     }
   }, [router.query, selectedPost]);
@@ -46,6 +57,12 @@ export default function PostPage() {
     if (!user) return;
     dispatch(getAllPosts({ communityId: communityId as string }));
   }, [user]);
+
+  useEffect(() => {
+    if (!communityData?.id) {
+      dispatch(getCommunityData({ communityId: communityId as string }));
+    }
+  }, [router.query, communityData]);
 
   return (
     <PageContentLayout>
@@ -80,7 +97,7 @@ export default function PostPage() {
         )}
       </>
       {/* Right side content */}
-      <>{/* <About /> */}</>
+      <>{communityData && <AboutCommunity communityData={communityData} />}</>
     </PageContentLayout>
   );
 }

@@ -1,23 +1,8 @@
-import { useState } from 'react';
-import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import { Flex, Icon, Image, Skeleton, Spinner, Text } from '@chakra-ui/react';
-import {
-  IoArrowDownCircleOutline,
-  IoArrowDownCircleSharp,
-  IoArrowRedoOutline,
-  IoArrowUpCircleOutline,
-  IoArrowUpCircleSharp,
-  IoBookmarkOutline,
-} from 'react-icons/io5';
-import { BsChat } from 'react-icons/bs';
-import { AiOutlineDelete } from 'react-icons/ai';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { deletePost, IPost, selectPost, voteToPost } from '@/store/postSlice';
-import { openModal } from '@/store/authModalSlice';
+import { Flex } from '@chakra-ui/react';
 import { User } from 'firebase/auth';
-import { useRouter } from 'next/router';
-import PostVoteBar from './PostVoteBar';
-import PostContent from './PostContent';
+import PostVoteBar from '@/components/Post/PostVoteBar';
+import PostContent from '@/components/Post/PostContent';
+import { IPost } from '@/store/postSlice';
 
 interface PostItemProps {
   user?: User | null;
