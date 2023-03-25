@@ -4,6 +4,7 @@ import {
   doc,
   FieldValue,
   FirestoreError,
+  getDoc,
   getDocs,
   increment,
   Timestamp,
@@ -52,10 +53,10 @@ export const communitySlice = createSlice({
       state.currentCommunity = action.payload;
     },
     updateCurrentCommunityImageURL: (state, action: PayloadAction<string>) => {
-      if (state.currentCommunity !== undefined ) {
+      if (state.currentCommunity !== undefined) {
         state.currentCommunity.imageURL = action.payload;
       }
-    } 
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getAllCommunitySnippets.pending, (state) => {
@@ -108,10 +109,24 @@ export const communitySlice = createSlice({
           state.error = action.error;
         }
       });
+    builder.addCase(getCommunityData.fulfilled, (state, action) => {
+      state.currentCommunity = action.payload;
+    }),
+      builder.addCase(getCommunityData.rejected, (state, action) => {
+        if (action.payload) {
+          state.error = action.payload;
+        } else {
+          state.error = action.error;
+        }
+      });
   },
 });
 
-export const { resetCommunityState, setCurrentCommunity, updateCurrentCommunityImageURL } = communitySlice.actions;
+export const {
+  resetCommunityState,
+  setCurrentCommunity,
+  updateCurrentCommunityImageURL,
+} = communitySlice.actions;
 
 export default communitySlice.reducer;
 
@@ -200,6 +215,28 @@ export const leaveCommunity = createAsyncThunk<
     await batch.commit();
 
     return communityId;
+  } catch (err) {
+    console.log(`leaveCommunity function Error: ${err}`);
+    if (err instanceof Error) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
+    }
+    if (err instanceof FirestoreError) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
+    }
+    return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
+  }
+});
+
+export const getCommunityData = createAsyncThunk<
+  ICommunity,
+  { communityId: string },
+  { rejectValue: string; serializedErrorType: string }
+>('community/getCommunityData', async ({ communityId }, thunkAPI) => {
+  try {
+    const communityDocRef = doc(firestore, 'communities', communityId);
+    const communitySnap = await getDoc(communityDocRef);
+    const communityData = { id: communityDocRef.id, ...communitySnap.data() };
+    return communityData as ICommunity;
   } catch (err) {
     console.log(`leaveCommunity function Error: ${err}`);
     if (err instanceof Error) {
