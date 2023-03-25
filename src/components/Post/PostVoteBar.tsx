@@ -35,13 +35,6 @@ export default function PostVoteBar({
     (postVote) => postVote.postId === post.id
   )?.voteNumber;
 
-  useEffect(() => {
-    if (!user) return;
-    if (reduxPostPosts.length === 0) {
-      dispatch(getAllPosts({ communityId }));
-    }
-  }, []);
-
   const voteHandler = async (voteType: number) => {
     console.log(`voted at ${post.id}`);
 
