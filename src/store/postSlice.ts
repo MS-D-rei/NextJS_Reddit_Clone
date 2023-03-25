@@ -6,6 +6,7 @@ import {
   doc,
   FieldValue,
   FirestoreError,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -117,12 +118,15 @@ export const postSlice = createSlice({
     builder.addCase(getPostVotes.fulfilled, (state, action) => {
       state.postVotes = action.payload;
     }),
-    builder.addCase(getPostVotes.rejected, (state, action) => {
-      if (action.payload) {
-        state.error = action.payload;
-      } else {
-        state.error = action.error;
-      }
+      builder.addCase(getPostVotes.rejected, (state, action) => {
+        if (action.payload) {
+          state.error = action.payload;
+        } else {
+          state.error = action.error;
+        }
+      });
+    builder.addCase(getPost.fulfilled, (state, action) => {
+      state.selectedPost = action.payload;
     })
   },
 });
@@ -189,7 +193,7 @@ export const deletePost = createAsyncThunk<
 });
 
 export const voteToPost = createAsyncThunk<
-  { selectedPost: IPost, posts: IPost[]; postVotes: IPostVote[] },
+  { selectedPost: IPost; posts: IPost[]; postVotes: IPostVote[] },
   {
     userUid: string;
     post: IPost;
@@ -294,7 +298,10 @@ export const voteToPost = createAsyncThunk<
 
       // return newPosts and newPostVotes to update postState
       const postIndex = newPosts.findIndex((item) => item.id === post.id);
-      const selectedPost: IPost = { ...newPosts[postIndex], voteStatus: newTotalVoteStatus };
+      const selectedPost: IPost = {
+        ...newPosts[postIndex],
+        voteStatus: newTotalVoteStatus,
+      };
       newPosts[postIndex] = selectedPost;
       return {
         selectedPost,
@@ -321,7 +328,7 @@ export const getPostVotes = createAsyncThunk<
   try {
     const postVotesQuery = query(
       collection(firestore, 'users', `${userUid}/postVotes`),
-      where('communityId', '==', communityId),
+      where('communityId', '==', communityId)
     );
     const postVotesQuerySnapshot = await getDocs(postVotesQuery);
     const postVotesData = postVotesQuerySnapshot.docs.map((doc) =>
@@ -331,6 +338,27 @@ export const getPostVotes = createAsyncThunk<
     return postVotesData as IPostVote[];
   } catch (err) {
     console.log(err);
+    if (err instanceof Error) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}}`);
+    }
+    if (err instanceof FirestoreError) {
+      return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
+    }
+    return thunkAPI.rejectWithValue(`Unexpected Error: ${err}`);
+  }
+});
+
+export const getPost = createAsyncThunk<
+  IPost,
+  { postId: string },
+  { rejectValue: string; serializedErrorType: string }
+>('post/getPost', async ({ postId }, thunkAPI) => {
+  try {
+    const postDocRef = doc(firestore, 'posts', postId);
+    const postSnap = await getDoc(postDocRef);
+    const post = { id: postDocRef.id, ...postSnap.data() };
+    return post as IPost;
+  } catch (err) {
     if (err instanceof Error) {
       return thunkAPI.rejectWithValue(`${err.name}: ${err.message}}`);
     }
