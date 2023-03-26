@@ -16,6 +16,7 @@ import {
 } from '@/store/postSlice';
 import { getCommunityData } from '@/store/communitySlice';
 import AboutCommunity from '@/components/Community/AboutCommunity';
+import Comments from '@/components/Post/Comment';
 
 export default function PostPage() {
   const router = useRouter();
@@ -26,7 +27,9 @@ export default function PostPage() {
 
   const [user] = useAuthState(auth);
   const selectedPost = useAppSelector((state) => state.post.selectedPost);
-  const { communityId } = router.query;
+  // const { communityId, postId } = router.query;
+  const communityId = router.query.communityId as string;
+  const postId = router.query.postId as string;
   const creatorId = useAppSelector(
     (state) => state.post.selectedPost?.creatorId
   );
@@ -36,8 +39,6 @@ export default function PostPage() {
   );
 
   useEffect(() => {
-    const postId = router.query.postId as string;
-
     if (postId && !selectedPost?.id) {
       dispatch(getPost({ postId }));
     }
@@ -46,7 +47,7 @@ export default function PostPage() {
   useEffect(() => {
     if (user) {
       dispatch(
-        getPostVotes({ userUid: user.uid, communityId: communityId as string })
+        getPostVotes({ userUid: user.uid, communityId, })
       );
       return;
     }
@@ -55,12 +56,12 @@ export default function PostPage() {
 
   useEffect(() => {
     if (!user) return;
-    dispatch(getAllPosts({ communityId: communityId as string }));
+    dispatch(getAllPosts({ communityId, }));
   }, [user]);
 
   useEffect(() => {
     if (!communityData?.id) {
-      dispatch(getCommunityData({ communityId: communityId as string }));
+      dispatch(getCommunityData({ communityId, }));
     }
   }, [router.query, communityData]);
 
@@ -81,18 +82,18 @@ export default function PostPage() {
               <PostVoteBar
                 post={selectedPost}
                 user={user}
-                communityId={communityId as string}
+                communityId={communityId}
                 isSingle={true}
               />
               <PostSingleContent
                 post={selectedPost}
                 user={user}
-                communityId={communityId as string}
+                communityId={communityId}
                 creatorId={creatorId!}
               />
             </Flex>
 
-            {/* <Comments /> */}
+            <Comments user={user} postId={postId} communityId={communityId} />
           </>
         )}
       </>
