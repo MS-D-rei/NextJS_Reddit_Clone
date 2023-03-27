@@ -28,18 +28,21 @@ export default function PostPage() {
   const [user] = useAuthState(auth);
   const selectedPost = useAppSelector((state) => state.post.selectedPost);
   // const { communityId, postId } = router.query;
+
+  // router.query.xxx could be undefined when first loading page.
   const communityId = router.query.communityId as string;
   const postId = router.query.postId as string;
+
   const creatorId = useAppSelector(
     (state) => state.post.selectedPost?.creatorId
   );
 
-  const communityData = useAppSelector(
+  const currentCommunityData = useAppSelector(
     (state) => state.community.currentCommunity
   );
 
   useEffect(() => {
-    if (postId && !selectedPost?.id) {
+    if (!selectedPost?.id && postId) {
       dispatch(getPost({ postId }));
     }
   }, [router.query, selectedPost]);
@@ -60,10 +63,10 @@ export default function PostPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!communityData?.id) {
+    if (!currentCommunityData?.id && communityId) {
       dispatch(getCommunityData({ communityId, }));
     }
-  }, [router.query, communityData]);
+  }, [router.query, currentCommunityData]);
 
   return (
     <PageContentLayout>
@@ -98,7 +101,7 @@ export default function PostPage() {
         )}
       </>
       {/* Right side content */}
-      <>{communityData && <AboutCommunity communityData={communityData} />}</>
+      <>{currentCommunityData && <AboutCommunity communityData={currentCommunityData} />}</>
     </PageContentLayout>
   );
 }
