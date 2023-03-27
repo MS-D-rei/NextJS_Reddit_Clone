@@ -357,7 +357,8 @@ export const getPost = createAsyncThunk<
     const postDocRef = doc(firestore, 'posts', postId);
     const postSnap = await getDoc(postDocRef);
     const post = { id: postDocRef.id, ...postSnap.data() };
-    return post as IPost;
+    const serializedPostData = JSON.parse(JSON.stringify(post));
+    return serializedPostData as IPost;
   } catch (err) {
     if (err instanceof Error) {
       return thunkAPI.rejectWithValue(`${err.name}: ${err.message}}`);

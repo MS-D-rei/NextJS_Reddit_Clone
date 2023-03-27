@@ -236,9 +236,10 @@ export const getCommunityData = createAsyncThunk<
     const communityDocRef = doc(firestore, 'communities', communityId);
     const communitySnap = await getDoc(communityDocRef);
     const communityData = { id: communityDocRef.id, ...communitySnap.data() };
-    return communityData as ICommunity;
+    const serializedCommunityData = JSON.parse(JSON.stringify(communityData));
+    return serializedCommunityData as ICommunity;
   } catch (err) {
-    console.log(`leaveCommunity function Error: ${err}`);
+    console.log(`getCommunityData function Error: ${err}`);
     if (err instanceof Error) {
       return thunkAPI.rejectWithValue(`${err.name}: ${err.message}`);
     }
