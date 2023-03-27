@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { User } from 'firebase/auth';
 import { Box, Flex } from '@chakra-ui/react';
-import CommentInput from '@/components/Post/Comment/CommentInput';
+import CommentInput, { IComment } from '@/components/Post/Comment/CommentInput';
 
 interface CommentsProps {
   user?: User | null;
@@ -10,7 +10,7 @@ interface CommentsProps {
 }
 
 export default function Comments({ user, postId, communityId }: CommentsProps) {
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState<IComment[]>([]);
 
   const getComments = async () => {};
 
@@ -24,7 +24,7 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
         pr={4}
         mb={6}
       >
-        <CommentInput />
+        <CommentInput setComments={setComments} />
       </Flex>
     </Box>
   );
