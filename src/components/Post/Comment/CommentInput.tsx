@@ -102,13 +102,15 @@ export default function CommentInput({ setComments }: CommentInputProps) {
       }
       setCreateError(`Unexpected Error: ${err}`);
     }
+
+    setIsLoadingCreate(false);
   };
 
   return (
     <>
       {user ? (
         <>
-          <Text>
+          <Text mb={2}>
             Comment as{' '}
             <span style={{ color: '#3182CE' }}>
               {user?.email?.split('@')[0]}
@@ -123,12 +125,12 @@ export default function CommentInput({ setComments }: CommentInputProps) {
             _focus={{ outline: 'none', bg: 'white', border: '1px solid black' }}
             onChange={commentTextChangeHandler}
           />
-          <Flex>
+          <Flex justifyContent='flex-end' mt={4}>
             <Button onClick={createCommentHandler}>Comment</Button>
           </Flex>
         </>
       ) : (
-        <Flex>
+        <Flex alignItems='center' justifyContent='space-between' mt={4}>
           <Text>Log in or Sign up to leave a comment</Text>
           <AuthButtons />
         </Flex>

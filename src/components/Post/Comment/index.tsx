@@ -22,7 +22,8 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
         fontSize="10pt"
         pl={10}
         pr={4}
-        mb={6}
+        mt={4}
+        mb={4}
       >
         <CommentInput setComments={setComments} />
       </Flex>
