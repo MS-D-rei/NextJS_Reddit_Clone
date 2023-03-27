@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { Box, Flex } from '@chakra-ui/react';
-import CommentInput, { IComment } from '@/components/Post/Comment/CommentInput';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { firestore } from '@/firebase/clientApp';
+import CommentInput, { IComment } from '@/components/Post/Comment/CommentInput';
+import CommentItem from '@/components/Post/Comment/CommentItem';
 
 interface CommentsProps {
   user?: User | null;
@@ -30,7 +31,7 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
 
   useEffect(() => {
     getComments();
-  }, [])
+  }, []);
 
   return (
     <Box bg="white" borderRadius="0px 0px 4px 4px" padding={2}>
@@ -44,6 +45,9 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
         mb={4}
       >
         <CommentInput setComments={setComments} />
+        {comments.map((comment) => (
+          <CommentItem key={comment.id} comment={comment} userId={user?.uid} />
+        ))}
       </Flex>
     </Box>
   );
