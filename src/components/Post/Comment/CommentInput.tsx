@@ -75,6 +75,9 @@ export default function CommentInput({ setComments }: CommentInputProps) {
 
       batch.set(commentDocRef, newComment);
 
+      // Date.now() returns miliseconds from January 1st, 1970
+      newComment.createdAt = { seconds: Date.now() / 1000 } as Timestamp;
+
       // update numberOfComments of post in firestore
       const postDocRef = doc(firestore, 'posts', selectedPost.id!);
       batch.update(postDocRef, {
