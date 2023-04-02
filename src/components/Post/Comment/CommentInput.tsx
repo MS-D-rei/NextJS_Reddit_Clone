@@ -24,6 +24,7 @@ export interface IComment {
   communityId: string;
   postId: string;
   postTitle: string;
+  isEdited: boolean;
   createdAt: Timestamp;
 }
 
@@ -70,6 +71,7 @@ export default function CommentInput({ setComments }: CommentInputProps) {
         communityId,
         postId: selectedPost.id!,
         postTitle: selectedPost.title,
+        isEdited: false,
         createdAt: serverTimestamp() as Timestamp,
       };
 
