@@ -97,6 +97,9 @@ export default function CommentInput({ setComments }: CommentInputProps) {
 
       // update comments state
       setComments((prevState) => [newComment, ...prevState])
+
+      // clear comment textarea input
+      setCommentText('');
     } catch (err) {
       console.log(err);
       if (err instanceof Error) {
@@ -131,7 +134,7 @@ export default function CommentInput({ setComments }: CommentInputProps) {
             onChange={commentTextChangeHandler}
           />
           <Flex justifyContent='flex-end' mt={4}>
-            <Button onClick={createCommentHandler}>Comment</Button>
+            <Button disabled={isLoadingCreate} onClick={createCommentHandler}>Comment</Button>
           </Flex>
         </>
       ) : (
