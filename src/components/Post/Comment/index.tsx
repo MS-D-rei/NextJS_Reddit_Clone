@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
-import { Box, Flex } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { firestore } from '@/firebase/clientApp';
 import CommentInput, { IComment } from '@/components/Post/Comment/CommentInput';
@@ -45,9 +45,21 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
         mb={4}
       >
         <CommentInput setComments={setComments} />
-        {comments.map((comment) => (
-          <CommentItem key={comment.id} comment={comment} userId={user?.uid} />
-        ))}
+        {comments.length !== 0 ? (
+          <>
+            {comments.map((comment) => (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                userId={user?.uid}
+              />
+            ))}
+          </>
+        ) : (
+          <Flex justifyContent='center' padding={20} borderTop='1px solid' borderColor='gray.100' mt={4} >
+            <Text fontWeight={700} opacity={0.3}>No Comments Yet</Text>
+          </Flex>
+        )}
       </Flex>
     </Box>
   );
