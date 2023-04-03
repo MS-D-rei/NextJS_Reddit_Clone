@@ -26,7 +26,7 @@ export default function CommunityPage({ communityData }: CommunityPageProps) {
 
   useEffect(() => {
     dispatch(setCurrentCommunity(communityData));
-  }, []);
+  }, [communityData]);
 
   return (
     <>
