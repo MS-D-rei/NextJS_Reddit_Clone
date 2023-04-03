@@ -1,3 +1,4 @@
+import { ChangeEvent, Dispatch, SetStateAction, useState } from 'react';
 import { Box, Button, Flex, Icon, Text, Textarea } from '@chakra-ui/react';
 import { FaReddit } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
@@ -6,16 +7,23 @@ import {
   IoArrowUpCircleOutline,
 } from 'react-icons/io5';
 import { IComment } from '@/components/Post/Comment/CommentInput';
-import { doc, updateDoc } from 'firebase/firestore';
-import { firestore } from '@/firebase/clientApp';
-import { ChangeEvent, useState } from 'react';
+
 
 interface CommentItemProps {
   comment: IComment;
   userId?: string;
+  postId: string;
+  onEdit: (commentId: string, editCommentText: string) => Promise<void>
+  onDelete: (commentId: string) => Promise<void>
 }
 
-export default function CommentItem({ comment, userId }: CommentItemProps) {
+export default function CommentItem({
+  comment,
+  userId,
+  postId,
+  onEdit,
+  onDelete
+}: CommentItemProps) {
   const [editCommentText, setEditCommentText] = useState('');
   const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -33,18 +41,10 @@ export default function CommentItem({ comment, userId }: CommentItemProps) {
     setEditCommentText(event.target.value);
   };
 
-  const updateCommentHandler = async (commentId: string) => {
-    // update comment text in firestore
-    const commentDocRef = doc(firestore, 'comments', commentId);
-    await updateDoc(commentDocRef, {
-      text: editCommentText,
-      isEdited: true,
-    });
-
-    // update comments in redux
-    
+  const editCommentHandler = () => {
+    onEdit(comment.id, editCommentText);
     setIsEditOpen(false);
-  };
+  }
 
   return (
     <Flex mt={6}>
@@ -63,7 +63,11 @@ export default function CommentItem({ comment, userId }: CommentItemProps) {
           <Text color="gray.600" ml={2}>
             {commentCreatedTimeDistanceFromNow}
           </Text>
-          { comment.isEdited && <Text color='gray.600' ml={2}>(edited)</Text> }
+          {comment.isEdited && (
+            <Text color="gray.600" ml={2}>
+              (edited)
+            </Text>
+          )}
         </Flex>
         {/* comment content */}
         <Text fontSize="10pt" mt={2} mb={2}>
@@ -90,6 +94,15 @@ export default function CommentItem({ comment, userId }: CommentItemProps) {
               >
                 Edit
               </Text>
+              <Text
+                fontSize="10pt"
+                borderRadius={4}
+                _hover={{ bg: 'gray.200' }}
+                ml={1}
+                onClick={() => onDelete(comment.id)}
+              >
+                Delete
+              </Text>
             </>
           )}
         </Flex>
@@ -109,7 +122,12 @@ export default function CommentItem({ comment, userId }: CommentItemProps) {
               onChange={editCommentTextChangeHandler}
             />
             <Flex justifyContent="flex-end" mt={4}>
-              <Button onClick={() => updateCommentHandler(comment.id)} fontSize={14}>update</Button>
+              <Button
+                onClick={editCommentHandler}
+                fontSize={14}
+              >
+                update
+              </Button>
             </Flex>
           </>
         )}
