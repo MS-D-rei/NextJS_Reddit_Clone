@@ -27,9 +27,15 @@ export default function Header({ communityData }: HeaderProps) {
     dispatch(getAllCommunitySnippets({ userId: user.uid }));
   }, [user]);
 
-  const communityState = useAppSelector((state) => state.community);
+  // const communityState = useAppSelector((state) => state.community);
+  // call multiple times to follow redux best style guide
+  // https://redux.js.org/style-guide/#call-useselector-multiple-times-in-function-components
+  const isLoading = useAppSelector((state) => state.community.isLoading);
+  const error = useAppSelector((state) => state.community.error);
+  const snippets = useAppSelector((state) => state.community.snippets);
+  const currentCommunityImage = useAppSelector((state) => state.community.currentCommunity?.imageURL);
 
-  const isJoined = !!communityState.snippets.find(
+  const isJoined = !!snippets.find(
     (snippet) => snippet.communityId === communityData.id
   );
 
@@ -57,9 +63,9 @@ export default function Header({ communityData }: HeaderProps) {
       <Box height="50%" bg="blue.400" />
       <Flex justifyContent="center" bg="white" flexGrow={1}>
         <Flex width="95%" maxWidth="860px">
-          {communityData.imageURL ? (
+          { currentCommunityImage ? (
             <Image
-              src={communityData.imageURL}
+              src={currentCommunityImage}
               boxSize="60px"
               border="4px solid white"
               borderRadius="50%"
@@ -91,12 +97,12 @@ export default function Header({ communityData }: HeaderProps) {
             height="30px"
             mt={4}
             ml={4}
-            isLoading={communityState.isLoading}
+            isLoading={isLoading}
             onClick={() => communityJoinStateHandler(communityData, isJoined)}
           >
             {isJoined ? 'Joined' : 'Join'}
           </Button>
-          <Text color="red">{communityState.error}</Text>
+          <Text color="red">{error}</Text>
         </Flex>
       </Flex>
     </Flex>
