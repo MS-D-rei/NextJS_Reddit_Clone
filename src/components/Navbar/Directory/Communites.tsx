@@ -28,7 +28,7 @@ export default function Communities() {
           .map((communitySnippet) => (
             <MenuListItem
               key={communitySnippet.communityId}
-              displayText={`r/${communitySnippet.communityId}`}
+              communityId={communitySnippet.communityId}
               imageURL={communitySnippet.imageURL}
             />
           ))}
@@ -50,7 +50,7 @@ export default function Communities() {
         {communitySnippets.map((communitySnippet) => (
           <MenuListItem
             key={communitySnippet.communityId}
-            displayText={`r/${communitySnippet.communityId}`}
+            communityId={communitySnippet.communityId}
             imageURL={communitySnippet.imageURL}
           />
         ))}

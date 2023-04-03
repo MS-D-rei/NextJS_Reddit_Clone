@@ -2,12 +2,12 @@ import { Flex, Icon, Image, MenuItem, Text } from '@chakra-ui/react';
 import { FaReddit } from 'react-icons/fa';
 
 interface MenuListItemProps {
-  displayText: string;
+  communityId: string;
   imageURL?: string;
 }
 
 export default function MenuListItem({
-  displayText,
+  communityId,
   imageURL,
 }: MenuListItemProps) {
   return (
@@ -18,7 +18,7 @@ export default function MenuListItem({
         ) : (
           <Icon as={FaReddit} fontSize={20} mr={2} />
         )}
-        <Text fontSize="10pt">{displayText}</Text>
+        <Text fontSize="10pt">{`r/${communityId}`}</Text>
       </Flex>
     </MenuItem>
   );
