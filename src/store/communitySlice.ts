@@ -166,7 +166,7 @@ export const joinCommunity = createAsyncThunk<
     const batch = writeBatch(firestore);
     const newCommunitySnippet: ICommunitySnippet = {
       communityId: communityData.id,
-      isModerator: false,
+      isModerator: userId === communityData.creatorId,
       imageURL: communityData.imageURL || '',
     };
     batch.set(
