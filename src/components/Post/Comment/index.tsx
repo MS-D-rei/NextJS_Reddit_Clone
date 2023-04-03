@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
 import { Box, Flex, Text } from '@chakra-ui/react';
 import {
@@ -22,10 +22,9 @@ import CommentItem from '@/components/Post/Comment/CommentItem';
 interface CommentsProps {
   user?: User | null;
   postId: string;
-  communityId: string;
 }
 
-export default function Comments({ user, postId, communityId }: CommentsProps) {
+export default function Comments({ user, postId }: CommentsProps) {
   const [comments, setComments] = useState<IComment[]>([]);
   const [error, setError] = useState('');
 
@@ -150,7 +149,6 @@ export default function Comments({ user, postId, communityId }: CommentsProps) {
                 key={comment.id}
                 comment={comment}
                 userId={user?.uid}
-                postId={postId}
                 onEdit={editCommentHandler}
                 onDelete={deleteCommentHandler}
               />

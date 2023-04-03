@@ -1,4 +1,4 @@
-import { ChangeEvent, Dispatch, SetStateAction, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { Box, Button, Flex, Icon, Text, Textarea } from '@chakra-ui/react';
 import { FaReddit } from 'react-icons/fa';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,7 +12,6 @@ import { IComment } from '@/components/Post/Comment/CommentInput';
 interface CommentItemProps {
   comment: IComment;
   userId?: string;
-  postId: string;
   onEdit: (commentId: string, editCommentText: string) => Promise<void>
   onDelete: (commentId: string) => Promise<void>
 }
@@ -20,7 +19,6 @@ interface CommentItemProps {
 export default function CommentItem({
   comment,
   userId,
-  postId,
   onEdit,
   onDelete
 }: CommentItemProps) {
@@ -41,9 +39,13 @@ export default function CommentItem({
     setEditCommentText(event.target.value);
   };
 
-  const editCommentHandler = () => {
-    onEdit(comment.id, editCommentText);
+  const editCommentHandler = async () => {
+    await onEdit(comment.id, editCommentText);
     setIsEditOpen(false);
+  }
+
+  const deleteCommentHandler = async () => {
+    await onDelete(comment.id);
   }
 
   return (
@@ -99,7 +101,7 @@ export default function CommentItem({
                 borderRadius={4}
                 _hover={{ bg: 'gray.200' }}
                 ml={1}
-                onClick={() => onDelete(comment.id)}
+                onClick={deleteCommentHandler}
               >
                 Delete
               </Text>
