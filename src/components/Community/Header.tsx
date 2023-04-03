@@ -57,9 +57,9 @@ export default function Header({ communityData }: HeaderProps) {
       <Box height="50%" bg="blue.400" />
       <Flex justifyContent="center" bg="white" flexGrow={1}>
         <Flex width="95%" maxWidth="860px">
-          {communityState.currentCommunity?.imageURL ? (
+          {communityData.imageURL ? (
             <Image
-              src={communityState.currentCommunity.imageURL}
+              src={communityData.imageURL}
               boxSize="60px"
               border="4px solid white"
               borderRadius="50%"
