@@ -46,6 +46,8 @@ export default function AboutCommunity({ communityData }: AboutCommunityProps) {
   };
 
   const updateImageHandler = async () => {
+    // if no user, do nothing.
+    if (!user) return;
     // if no selectedFile, do nothing.
     if (!selectedFile) return;
 
@@ -57,11 +59,17 @@ export default function AboutCommunity({ communityData }: AboutCommunityProps) {
       await uploadString(imageRef, selectedFile, 'data_url');
       const downloadURL = await getDownloadURL(imageRef);
 
-      // update the community imageURL field.
+      // update the community imageURL field in firestore
       const communityDocRef = doc(firestore, 'communities', communityData.id);
       await updateDoc(communityDocRef, {
         imageURL: downloadURL,
       });
+
+      // update user's communitySnippets in firestore
+      const communitySnippetDocRef = doc(firestore, 'users', `${user.uid}/communitySnippets/${communityData.id}`)
+      await updateDoc(communitySnippetDocRef, {
+        imageURL: downloadURL,
+      })
 
       // update communityState.currentCommunity
       dispatch(updateCurrentCommunityImageURL(downloadURL));
