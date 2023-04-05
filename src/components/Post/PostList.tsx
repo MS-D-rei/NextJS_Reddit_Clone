@@ -70,8 +70,6 @@ const PostList = ({ communityData }: PostListProps) => {
               key={post.id}
               user={user}
               post={post}
-              communityId={communityData.id}
-              creatorId={communityData.creatorId}
             />
           ))}
         </Box>

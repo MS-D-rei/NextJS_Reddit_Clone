@@ -12,15 +12,11 @@ import { deletePost, IPost, selectPost } from '@/store/postSlice';
 interface PostContentProps {
   post: IPost;
   user?: User | null;
-  communityId: string;
-  creatorId: string;
 }
 
 export default function PostContent({
   post,
   user,
-  communityId,
-  creatorId,
 }: PostContentProps) {
   // console.log(`${post.title} content rendered`);
 
@@ -35,12 +31,12 @@ export default function PostContent({
   );
   // console.log(new Date(post.createdAt.seconds * 1000));
 
-  const userIsCreator = user?.uid === creatorId;
+  const userIsCreator = user?.uid === post.creatorId;
 
   const selectPostHandler = () => {
     dispatch(selectPost(post));
     router.push({
-      pathname: `/r/${communityId}/comments/${post.id}`,
+      pathname: `/r/${post.communityId}/comments/${post.id}`,
       // query: { creatorId, postData: JSON.stringify(post) },
     });
   };

@@ -7,15 +7,11 @@ import { IPost } from '@/store/postSlice';
 interface PostItemProps {
   user?: User | null;
   post: IPost;
-  communityId: string;
-  creatorId: string;
 }
 
 export default function PostItem({
   user,
   post,
-  communityId,
-  creatorId,
 }: PostItemProps) {
 
   return (
@@ -28,9 +24,9 @@ export default function PostItem({
       mb={4}
     >
       {/* gray vote bar */}
-      <PostVoteBar post={post} user={user} communityId={communityId} isSingle={false} />
+      <PostVoteBar post={post} user={user} isSingle={false} />
       {/* post content */}
-      <PostContent post={post} user={user} communityId={communityId} creatorId={creatorId} />
+      <PostContent post={post} user={user} />
     </Flex>
   );
 }
