@@ -25,9 +25,8 @@ export default function PostPage() {
 
   const dispatch = useAppDispatch();
 
-  const [user] = useAuthState(auth);
+  const [user, isLoadingUser] = useAuthState(auth);
   const selectedPost = useAppSelector((state) => state.post.selectedPost);
-  // const { communityId, postId } = router.query;
 
   // router.query.xxx could be undefined when first loading page.
   const communityId = router.query.communityId as string;
@@ -47,16 +46,18 @@ export default function PostPage() {
     }
   }, [router.query, selectedPost]);
 
+  // After getting user state, get user's postVotes if logged in.
+  // If not, set postVotes to empty array.
   useEffect(() => {
-    if (user) {
-      dispatch(
-        getPostVotes({ userUid: user.uid, communityId, })
-      );
+    if (isLoadingUser) return;
+    if (!user) {
+      dispatch(setPostVotes([]));
       return;
     }
-    dispatch(setPostVotes([]));
-  }, [user]);
+    dispatch(getPostVotes({ userId: user.uid, communityId }));
+  }, [user, isLoadingUser]);
 
+  // After getting user state, get all posts if logged in.
   useEffect(() => {
     if (!user) return;
     dispatch(getAllPosts({ communityId, }));
@@ -85,7 +86,6 @@ export default function PostPage() {
               <PostVoteBar
                 post={selectedPost}
                 user={user}
-                communityId={communityId}
                 isSingle={true}
               />
               <PostSingleContent
@@ -96,7 +96,7 @@ export default function PostPage() {
               />
             </Flex>
 
-            <Comments user={user} postId={postId} communityId={communityId} />
+            <Comments user={user} postId={postId} />
           </>
         )}
       </>

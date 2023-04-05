@@ -17,21 +17,18 @@ const PostList = ({ communityData }: PostListProps) => {
 
   const dispatch = useAppDispatch();
 
-  const reduxPostPosts = useAppSelector((state) => state.post.posts);
-  const reduxPostIsLoading = useAppSelector((state) => state.post.isLoading);
+  const posts = useAppSelector((state) => state.post.posts);
+  const isLoadingPosts = useAppSelector((state) => state.post.isLoading);
 
-  // const user = auth.currentUser;
   const [user] = useAuthState(auth);
 
   useEffect(() => {
-    // console.log('dispatch getAllPosts');
     dispatch(getAllPosts({ communityId: communityData.id }));
   }, [communityData.id])
 
   useEffect(() => {
     if (!user) return;
-    // console.log('dispatch getPostVotes');
-    dispatch(getPostVotes({ userUid: user.uid, communityId: communityData.id }))
+    dispatch(getPostVotes({ userId: user.uid, communityId: communityData.id }))
   }, [user, communityData.id]);
 
   useEffect(() => {
@@ -40,32 +37,13 @@ const PostList = ({ communityData }: PostListProps) => {
     }
   }, [user])
 
-  // const onVote = (post: IPost, voteType: number) => {
-  //   if (!user) {
-  //     dispatch(openModal('login'));
-  //     return;
-  //   }
-
-  //   console.log(`voted to ${post.title}`);
-
-  //   dispatch(
-  //     voteToPost({
-  //       userUid: user.uid,
-  //       postState,
-  //       post,
-  //       communityId: communityData.id,
-  //       voteType,
-  //     })
-  //   );
-  // };
-
   return (
     <>
-      {reduxPostIsLoading ? (
+      { isLoadingPosts ? (
         <PostLoader />
       ) : (
         <Box>
-          {reduxPostPosts.map((post) => (
+          {posts.map((post) => (
             <PostItem
               key={post.id}
               user={user}
