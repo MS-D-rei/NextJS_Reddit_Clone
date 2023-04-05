@@ -70,6 +70,7 @@ const PostList = ({ communityData }: PostListProps) => {
               key={post.id}
               user={user}
               post={post}
+              isHomePage={false}
             />
           ))}
         </Box>

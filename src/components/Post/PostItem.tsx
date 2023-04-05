@@ -7,11 +7,13 @@ import { IPost } from '@/store/postSlice';
 interface PostItemProps {
   user?: User | null;
   post: IPost;
+  isHomePage: boolean;
 }
 
 export default function PostItem({
   user,
   post,
+  isHomePage
 }: PostItemProps) {
 
   return (
@@ -26,7 +28,7 @@ export default function PostItem({
       {/* gray vote bar */}
       <PostVoteBar post={post} user={user} isSingle={false} />
       {/* post content */}
-      <PostContent post={post} user={user} />
+      <PostContent post={post} user={user} isHomePage={isHomePage} />
     </Flex>
   );
 }

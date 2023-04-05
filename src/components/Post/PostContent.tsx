@@ -12,11 +12,13 @@ import { deletePost, IPost, selectPost } from '@/store/postSlice';
 interface PostContentProps {
   post: IPost;
   user?: User | null;
+  isHomePage: boolean;
 }
 
 export default function PostContent({
   post,
   user,
+  isHomePage,
 }: PostContentProps) {
   // console.log(`${post.title} content rendered`);
 
@@ -45,6 +47,10 @@ export default function PostContent({
     dispatch(deletePost({ post }));
   };
 
+  const communityLinkHandler = () => {
+    router.push(`/r/${post.communityId}`);
+  }
+
   return (
     <Flex direction="column" width="100%">
       <Flex
@@ -55,6 +61,13 @@ export default function PostContent({
       >
         {/* post by and time diff */}
         <Flex direction="row" alignItems="center" mt={2} mb={2} ml={3}>
+          {isHomePage && (
+            <Text
+              fontWeight={700}
+              _hover={{ textDecoration: 'underline' }}
+              onClick={communityLinkHandler}
+            >{`r/${post.communityId}`}</Text>
+          )}
           <Text fontSize="9pt" color="gray.500" mr={2}>
             Posted by u/{post.createDisplayName}
           </Text>
