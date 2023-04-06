@@ -18,11 +18,13 @@ import CreatePostLink from '@/components/Community/CreatePostLink';
 import PageContentLayout from '@/components/Layout/PageContentLayout';
 import PostItem from '@/components/Post/PostItem';
 import PostLoader from '@/components/Post/PostLoader';
+import { getAllCommunitySnippets, setCommunitySnippets } from '@/store/communitySlice';
 
 export default function Home() {
   const [user, isLoadingUser] = useAuthState(auth);
   const [isPostsLoading, setIsPostsLoading] = useState(false);
   const [feedError, setFeedError] = useState<string | null>(null);
+  const [isCommunitySnippetsLoading, setIsCommunitySnippetsLoading] = useState(true);
 
   const dispatch = useAppDispatch();
 
@@ -99,18 +101,31 @@ export default function Home() {
         setFeedError(`Unexpected error occurred: ${err}`);
       }
     }
+    setIsPostsLoading(false);
   };
 
-  // if user is logged in, build feed for logged in user
-  // if user is logged out, build feed for logged out user
+  // if user is logged in, get all user's community snippets
+  // if user is logged out, set community snippets to empty array and display feed for logged out user
   useEffect(() => {
     if (isLoadingUser) return;
+    if (user) {
+      dispatch(getAllCommunitySnippets({ userId: user.uid }));
+    } else {
+      dispatch(setCommunitySnippets([]));
+    }
+    setIsCommunitySnippetsLoading(false);
+  }, [isLoadingUser, user]);
+
+  // after get or set community snippets,
+  // build feed for logged in user or logged out user
+  useEffect(() => {
+    if (isCommunitySnippetsLoading) return;
     if (user) {
       buildFeedForLoggedInUser();
     } else {
       buildFeedForLoggedOutUser();
     }
-  }, [isLoadingUser, user]);
+  }, [isCommunitySnippetsLoading, user]);
 
   return (
     <PageContentLayout>
