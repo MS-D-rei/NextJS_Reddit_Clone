@@ -52,6 +52,9 @@ export const communitySlice = createSlice({
     setCurrentCommunity: (state, action: PayloadAction<ICommunity>) => {
       state.currentCommunity = action.payload;
     },
+    setCommunitySnippets: (state, action: PayloadAction<ICommunitySnippet[]>) => {
+      state.snippets = action.payload;
+    },
     updateCurrentCommunityImageURL: (state, action: PayloadAction<string>) => {
       if (state.currentCommunity !== undefined) {
         state.currentCommunity.imageURL = action.payload;
@@ -125,6 +128,7 @@ export const communitySlice = createSlice({
 export const {
   resetCommunityState,
   setCurrentCommunity,
+  setCommunitySnippets,
   updateCurrentCommunityImageURL,
 } = communitySlice.actions;
 

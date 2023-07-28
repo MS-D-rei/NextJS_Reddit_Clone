@@ -18,14 +18,16 @@ interface HeaderProps {
 
 export default function Header({ communityData }: HeaderProps) {
   const dispatch = useAppDispatch();
-  const [user] = useAuthState(auth);
+  const [user, isLoadingUser] = useAuthState(auth);
 
+  // if user logged in, get all community snippets
   useEffect(() => {
+    if (isLoadingUser) return;
     if (!user) {
       return;
     }
     dispatch(getAllCommunitySnippets({ userId: user.uid }));
-  }, [user]);
+  }, [user, isLoadingUser]);
 
   // const communityState = useAppSelector((state) => state.community);
   // call multiple times to follow redux best style guide

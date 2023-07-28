@@ -14,14 +14,12 @@ import { getAllPosts, IPost, voteToPost } from '@/store/postSlice';
 interface PostVoteBarProps {
   post: IPost;
   user?: User | null;
-  communityId: string;
   isSingle: boolean;
 }
 
 export default function PostVoteBar({
   post,
   user,
-  communityId,
   isSingle,
 }: PostVoteBarProps) {
   // console.log(`${post.title} votebar rendered`);
@@ -48,7 +46,7 @@ export default function PostVoteBar({
       voteToPost({
         userUid: user.uid,
         post,
-        communityId,
+        communityId: post.communityId,
         voteType: voteType,
         reduxPosts: reduxPostPosts,
         reduxPostVotes: reduxPostPostVotes,

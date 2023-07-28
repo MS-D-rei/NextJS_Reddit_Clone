@@ -12,15 +12,13 @@ import { deletePost, IPost, selectPost } from '@/store/postSlice';
 interface PostContentProps {
   post: IPost;
   user?: User | null;
-  communityId: string;
-  creatorId: string;
+  isHomePage: boolean;
 }
 
 export default function PostContent({
   post,
   user,
-  communityId,
-  creatorId,
+  isHomePage,
 }: PostContentProps) {
   // console.log(`${post.title} content rendered`);
 
@@ -35,12 +33,12 @@ export default function PostContent({
   );
   // console.log(new Date(post.createdAt.seconds * 1000));
 
-  const userIsCreator = user?.uid === creatorId;
+  const userIsCreator = user?.uid === post.creatorId;
 
   const selectPostHandler = () => {
     dispatch(selectPost(post));
     router.push({
-      pathname: `/r/${communityId}/comments/${post.id}`,
+      pathname: `/r/${post.communityId}/comments/${post.id}`,
       // query: { creatorId, postData: JSON.stringify(post) },
     });
   };
@@ -48,6 +46,10 @@ export default function PostContent({
   const deletePostHandler = (post: IPost) => {
     dispatch(deletePost({ post }));
   };
+
+  const communityLinkHandler = () => {
+    router.push(`/r/${post.communityId}`);
+  }
 
   return (
     <Flex direction="column" width="100%">
@@ -59,6 +61,13 @@ export default function PostContent({
       >
         {/* post by and time diff */}
         <Flex direction="row" alignItems="center" mt={2} mb={2} ml={3}>
+          {isHomePage && (
+            <Text
+              fontWeight={700}
+              _hover={{ textDecoration: 'underline' }}
+              onClick={communityLinkHandler}
+            >{`r/${post.communityId}`}</Text>
+          )}
           <Text fontSize="9pt" color="gray.500" mr={2}>
             Posted by u/{post.createDisplayName}
           </Text>

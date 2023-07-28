@@ -322,12 +322,12 @@ export const voteToPost = createAsyncThunk<
 
 export const getPostVotes = createAsyncThunk<
   IPostVote[],
-  { userUid: string; communityId: string },
+  { userId: string; communityId: string },
   { rejectValue: string; serializedErrorType: string }
->('post/getPostVotes', async ({ userUid, communityId }, thunkAPI) => {
+>('post/getPostVotes', async ({ userId, communityId }, thunkAPI) => {
   try {
     const postVotesQuery = query(
-      collection(firestore, 'users', `${userUid}/postVotes`),
+      collection(firestore, 'users', `${userId}/postVotes`),
       where('communityId', '==', communityId)
     );
     const postVotesQuerySnapshot = await getDocs(postVotesQuery);
